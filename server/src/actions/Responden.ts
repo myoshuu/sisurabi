@@ -12,9 +12,10 @@ export const indexResponden = async (req: Request, res: Response) => {
 
     return res
       .status(200)
-      .json({ message: "Getting responden data", responden });
+      .json({ message: "Berhasil mengambil semua data Responden.", responden });
   } catch (err) {
     console.error(err);
+    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
   }
 };
 
@@ -31,12 +32,12 @@ export const createResponden = async (req: Request, res: Response) => {
         createdBy: req.session.loggedIn?.email ?? "",
       },
     });
-    return res
-      .status(200)
-      .json({ message: `Responden "${responden.nama}" berhasil dibuat.` });
+    return res.status(200).json({
+      message: `Responden dengan nama "${responden.nama}" berhasil dibuat.`,
+    });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
   }
 };
 
@@ -45,12 +46,16 @@ export const showResponden = async (req: Request, res: Response) => {
     const { id } = req.params;
     const responden = await prisma.responden.findUnique({ where: { id } });
     if (!responden)
-      return res.status(400).json({ message: "The responden not found" });
-    return res
-      .status(200)
-      .json({ message: `Showing Responden "${responden?.nama}"` });
+      return res
+        .status(400)
+        .json({ message: "Responden dengan ID tersebut tidak ditemukan." });
+    return res.status(200).json({
+      message: `Menampilkan Responden dengan nama "${responden?.nama}".`,
+      responden,
+    });
   } catch (err) {
     console.error(err);
+    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
   }
 };
 
@@ -71,11 +76,12 @@ export const updateResponden = async (req: Request, res: Response) => {
       },
     });
 
-    return res
-      .status(200)
-      .json({ message: `Responden "${responden.nama}" berhasil di update.` });
+    return res.status(200).json({
+      message: `Responden dengan nama "${responden.nama}" berhasil di update.`,
+    });
   } catch (err) {
     console.error(err);
+    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
   }
 };
 
@@ -85,8 +91,11 @@ export const deleteResponden = async (req: Request, res: Response) => {
 
     const responden = await prisma.responden.delete({ where: { id } });
     if (responden)
-      return res.status(200).json({ message: "Responden berhasil dihapus." });
+      return res
+        .status(200)
+        .json({ message: "Responden tersebut berhasil dihapus." });
   } catch (err) {
     console.error(err);
+    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
   }
 };
