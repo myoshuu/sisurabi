@@ -40,6 +40,20 @@ export const createResponden = async (req: Request, res: Response) => {
   }
 };
 
+export const showResponden = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const responden = await prisma.responden.findUnique({ where: { id } });
+    if (!responden)
+      return res.status(400).json({ message: "The responden not found" });
+    return res
+      .status(200)
+      .json({ message: `Showing Responden "${responden?.nama}"` });
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 export const updateResponden = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
