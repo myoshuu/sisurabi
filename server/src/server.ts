@@ -2,15 +2,8 @@ import express, { Response } from "express";
 import session from "express-session";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { login, logout, register } from "./actions/Auth";
-import {
-  createResponden,
-  deleteResponden,
-  indexResponden,
-  updateResponden,
-} from "./actions/Responden";
-import { isAuthenticated } from "./middleware/auth";
-import { authorize } from "./middleware/authorize";
+
+import AuthRoute from "./routes/AuthRoute";
 
 const app = express();
 const PORT = 3000;
@@ -38,37 +31,9 @@ app.get("/api/test", (req, res: Response) => {
   res.json({ message: "Testing!" });
 });
 
-// Authentication
-app.post("/api/login", login);
-app.post("/api/register", register);
-app.post("/api/logout", isAuthenticated, logout);
-
-// Responden
-app.get(
-  "/api/responden",
-  isAuthenticated,
-  authorize("SUPER ADMIN", "MANAGER", "USER"),
-  indexResponden
-);
-app.post(
-  "/api/responden",
-  isAuthenticated,
-  authorize("SUPER ADMIN", "MANAGER", "USER"),
-  createResponden
-);
-app.put(
-  "/api/responden/:id",
-  isAuthenticated,
-  authorize("SUPER ADMIN", "MANAGER", "USER"),
-  updateResponden
-);
-app.delete(
-  "/api/responden/:id",
-  isAuthenticated,
-  authorize("SUPER ADMIN", "MANAGER", "USER"),
-  deleteResponden
-);
+// API
+app.use("/api/auth", AuthRoute);
 
 app.listen(PORT, () => {
-  console.log("Server running in port 3000");
+  console.log(`Server running in port http://localhost:${PORT}`);
 });

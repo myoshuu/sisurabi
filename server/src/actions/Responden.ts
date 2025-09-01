@@ -64,6 +64,10 @@ export const updateResponden = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { nama, telp, level, kabupatenKotaId, pasarId } = req.body;
 
+    const existing = await prisma.responden.findUnique({ where: { id } });
+    if (!existing)
+      res.status(404).json({ message: "Responden tidak ditemukan" });
+
     const responden = await prisma.responden.update({
       where: { id },
       data: {

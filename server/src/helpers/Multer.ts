@@ -7,8 +7,11 @@ const storage = multer.diskStorage({
     cb(null, "uploads/");
   },
   filename: (req, file, cb) => {
-    const unSuf = req.session.loggedIn?.email + "_" + Date.now();
-    cb(null, unSuf + path.extname(file.originalname));
+    const email = req.session.loggedIn?.email || "BANKINDONESIA";
+    cb(
+      null,
+      `ABSENSI_${email}_${Date.now()}${path.extname(file.originalname)}`
+    );
   },
 });
 
@@ -21,4 +24,4 @@ const fileFilter = (
   else cb(new Error("Only images are allowed"));
 };
 
-export const upload = multer({storage, fileFilter})
+export const upload = multer({ storage, fileFilter });
