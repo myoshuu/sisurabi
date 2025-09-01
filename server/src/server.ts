@@ -3,7 +3,8 @@ import session from "express-session";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
-import AuthRoute from "./routes/AuthRoute";
+import AuthRoute from "@/routes/AuthRoute";
+import RespondenRoute from "@/routes/RespondenRoute";
 
 const app = express();
 const PORT = 3000;
@@ -33,6 +34,7 @@ app.get("/api/test", (req, res: Response) => {
 
 // API
 app.use("/api/auth", AuthRoute);
+app.use("/api/responden", RespondenRoute);
 
 app.listen(PORT, () => {
   console.log(`Server running in port http://localhost:${PORT}`);

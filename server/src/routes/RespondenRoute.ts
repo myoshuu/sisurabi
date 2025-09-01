@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { isAuthenticated } from "../middleware/auth";
+import { isAuthenticated } from "@/middleware/auth";
 import {
   indexResponden,
   createResponden,
   updateResponden,
   deleteResponden,
-} from "../actions/Responden";
+} from "@/actions/Responden";
 import { authorize } from "@/middleware/authorize";
 
 const router = Router();

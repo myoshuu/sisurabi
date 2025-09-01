@@ -1,14 +1,16 @@
 import { Router } from "express";
-import { isAuthenticated } from "../middleware/auth";
+import { isAuthenticated } from "@/middleware/auth";
 import {
   indexLaporan,
   createLaporan,
   updateLaporan,
   deleteLaporan,
-} from "../actions/LaporanSuvenir";
+} from "@/actions/LaporanSuvenir";
 import { authorize } from "@/middleware/authorize";
+import { upload } from "@/helpers/Multer";
 
 const router = Router();
+const uploadLaporan = upload.single("foto");
 
 router.get(
   "/",
@@ -18,12 +20,14 @@ router.get(
 );
 router.post(
   "/",
+  uploadLaporan,
   isAuthenticated,
   authorize("SUPER ADMIN", "ADMIN"),
   createLaporan
 );
 router.put(
   "/:id",
+  uploadLaporan,
   isAuthenticated,
   authorize("SUPER ADMIN", "ADMIN"),
   updateLaporan

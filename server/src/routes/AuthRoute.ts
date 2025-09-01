@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { login, logout, register } from "../actions/Auth";
-import { isAuthenticated } from "../middleware/auth";
+import { login, logout, register } from "@/actions/Auth";
+import { isAuthenticated } from "@/middleware/auth";
 
 const router = Router();
 
