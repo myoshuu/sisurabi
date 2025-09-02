@@ -14,7 +14,15 @@ export const indexAbsensi = async (req: Request, res: Response) => {
       include: { user: { select: { email: true } } },
       orderBy: { clockIn: "desc" },
     });
-    return res.status(200).json({ message: "Mengambil data absens", absensi });
+    if (absensi.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Belum ada absensi, silahkan melakukan Clock In" });
+    } else {
+      return res
+        .status(200)
+        .json({ message: "Mengambil data absensi", absensi });
+    }
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Terjadi kesalahan sistem." });
@@ -81,7 +89,7 @@ export const clockIn = async (req: Request, res: Response) => {
       },
     });
 
-    res.status(200).json({ message: "Anda sudah berhasil clock in", absensi });
+    res.status(200).json({ message: "Anda sudah berhasil Clock In", absensi });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Terjadi kesalahan sistem." });
@@ -108,7 +116,8 @@ export const clockOut = async (req: Request, res: Response) => {
 
     if (!openSession) {
       return res.status(400).json({
-        message: "Tidak ada sesi terbuka. Silakan Clock In terlebih dahulu.",
+        message:
+          "Anda belum melakukan Clock In. Silakan Clock In terlebih dahulu.",
       });
     }
 
@@ -121,7 +130,7 @@ export const clockOut = async (req: Request, res: Response) => {
       },
     });
 
-    res.status(200).json({ message: "Anda sudah berhasil clock out", updated });
+    res.status(200).json({ message: "Anda sudah berhasil Clock Out", updated });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Terjadi kesalahan sistem." });
