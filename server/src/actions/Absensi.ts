@@ -3,12 +3,43 @@ import { Request, Response } from "express";
 
 export const indexAbsensi = async (req: Request, res: Response) => {
   try {
+    const userId = req.session.loggedIn?.id;
+    if (!userId)
+      return res
+        .status(401)
+        .json({ message: "Anda harus login terlebih dahulu" });
+
     const absensi = await prisma.absensi.findMany({
+      where: { userId },
       include: { user: { select: { email: true } } },
+      orderBy: { clockIn: "desc" },
     });
-    return res
-      .status(200)
-      .json({ message: "Mengambil semua data absensi", absensi });
+    return res.status(200).json({ message: "Mengambil data absens", absensi });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+  }
+};
+
+// Check Status
+export const statusAbsensi = async (req: Request, res: Response) => {
+  try {
+    const userId = req.session.loggedIn?.id;
+    if (!userId)
+      return res
+        .status(401)
+        .json({ message: "Anda harus login terlebih dahulu" });
+
+    const openSession = await prisma.absensi.findFirst({
+      where: { userId, clockOut: null },
+      orderBy: { clockIn: "desc" },
+    });
+
+    if (openSession) {
+      return res.status(400).json({ mode: "clockIn", absensi: openSession });
+    } else {
+      return res.status(400).json({ mode: "clockOut" });
+    }
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Terjadi kesalahan sistem." });
@@ -19,6 +50,7 @@ export const indexAbsensi = async (req: Request, res: Response) => {
 export const clockIn = async (req: Request, res: Response) => {
   try {
     const userId = req.session.loggedIn?.id;
+    const { catatan } = req.body;
 
     if (!userId)
       return res
@@ -28,22 +60,24 @@ export const clockIn = async (req: Request, res: Response) => {
     if (!req.file)
       return res.status(400).json({ message: "Anda harus mengunggah Foto" });
 
-    const existing = await prisma.absensi.findFirst({
-      where: {
-        userId,
-        clockIn: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
-      },
+    const openSession = await prisma.absensi.findFirst({
+      where: { userId, clockOut: null },
+      orderBy: { clockIn: "desc" },
     });
 
-    if (existing)
-      return res.status(400).json({ message: "Anda sudah clock in hari ini" });
+    if (openSession)
+      return res.status(400).json({
+        message:
+          "Masih ada absensi yang belum di Clock Out. Silahkan Clock Out terlebih dahulu.",
+      });
 
     const absensi = await prisma.absensi.create({
       data: {
         fotoClockIn: `/uploads/absensi/${req.file.filename}`,
         clockIn: new Date(),
+        catatan,
         userId,
-        createdBy: req.session.loggedIn?.email ?? "",
+        createdBy: req.session.loggedIn?.id ?? "",
       },
     });
 
@@ -67,23 +101,23 @@ export const clockOut = async (req: Request, res: Response) => {
     if (!req.file)
       return res.status(400).json({ message: "Anda harus mengunggah Foto" });
 
-    const absensi = await prisma.absensi.findFirst({
-      where: {
-        userId,
-        clockOut: null,
-        clockIn: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
-      },
+    const openSession = await prisma.absensi.findFirst({
+      where: { userId, clockOut: null },
+      orderBy: { clockIn: "desc" },
     });
 
-    if (!absensi)
-      return res.status(400).json({ message: "Belum clock in hari ini" });
+    if (!openSession) {
+      return res.status(400).json({
+        message: "Tidak ada sesi terbuka. Silakan Clock In terlebih dahulu.",
+      });
+    }
 
     const updated = await prisma.absensi.update({
-      where: { id: absensi.id },
+      where: { id: openSession.id },
       data: {
         fotoClockOut: `/uploads/absensi/${req.file.filename}`,
         clockOut: new Date(),
-        createdBy: req.session.loggedIn?.email ?? "",
+        updatedBy: req.session.loggedIn?.id ?? "",
       },
     });
 

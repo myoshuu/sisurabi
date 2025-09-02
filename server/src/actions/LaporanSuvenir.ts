@@ -37,7 +37,7 @@ export const createLaporan = async (req: Request, res: Response) => {
         catatan,
         respondenId,
         userId,
-        createdBy: req.session.loggedIn?.email ?? "",
+        createdBy: req.session.loggedIn?.id ?? "",
       },
     });
 
@@ -85,7 +85,7 @@ export const updateLaporan = async (req: Request, res: Response) => {
         catatan,
         respondenId,
         userId,
-        updatedBy: req.session.loggedIn?.email ?? "",
+        updatedBy: req.session.loggedIn?.id ?? "",
       },
     });
 

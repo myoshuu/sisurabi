@@ -29,7 +29,7 @@ export const createResponden = async (req: Request, res: Response) => {
         level,
         kabupatenKotaId,
         pasarId,
-        createdBy: req.session.loggedIn?.email ?? "",
+        createdBy: req.session.loggedIn?.id ?? "",
       },
     });
     return res.status(200).json({
@@ -76,7 +76,7 @@ export const updateResponden = async (req: Request, res: Response) => {
         level,
         kabupatenKotaId,
         pasarId,
-        updatedBy: req.session.loggedIn?.email ?? "",
+        updatedBy: req.session.loggedIn?.id ?? "",
       },
     });
 
