@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 
 import AuthRoute from "@/routes/AuthRoute";
 import RespondenRoute from "@/routes/RespondenRoute";
+import LaporanRoute from "@/routes/LaporanRoute";
 
 const app = express();
 const PORT = 3000;
@@ -35,6 +36,7 @@ app.get("/api/test", (req, res: Response) => {
 // API
 app.use("/api/auth", AuthRoute);
 app.use("/api/responden", RespondenRoute);
+app.use("/api/laporan", LaporanRoute);
 
 app.listen(PORT, () => {
   console.log(`Server running in port http://localhost:${PORT}`);

@@ -7,10 +7,10 @@ import {
   deleteLaporan,
 } from "@/actions/LaporanSuvenir";
 import { authorize } from "@/middleware/authorize";
-import { upload } from "@/helpers/Multer";
+import { uploader } from "@/helpers/Multer";
 
 const router = Router();
-const uploadLaporan = upload.single("foto");
+const uploadLaporan = uploader("Laporan");
 
 router.get(
   "/",
@@ -18,20 +18,23 @@ router.get(
   authorize("SUPER ADMIN", "ADMIN"),
   indexLaporan
 );
+
 router.post(
   "/",
-  uploadLaporan,
+  uploadLaporan.single("foto"),
   isAuthenticated,
   authorize("SUPER ADMIN", "ADMIN"),
   createLaporan
 );
+
 router.put(
   "/:id",
-  uploadLaporan,
+  uploadLaporan.single("foto"),
   isAuthenticated,
   authorize("SUPER ADMIN", "ADMIN"),
   updateLaporan
 );
+
 router.delete(
   "/:id",
   isAuthenticated,

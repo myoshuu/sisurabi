@@ -11,12 +11,14 @@ router.get(
   authorize("SUPER ADMMIN", "ADMIN"),
   indexAbsensi
 );
+
 router.post(
   "/clockin",
   isAuthenticated,
   authorize("SUPER ADMIN", "ADMIN", "USER"),
   clockIn
 );
+
 router.put(
   "/clockout",
   isAuthenticated,
