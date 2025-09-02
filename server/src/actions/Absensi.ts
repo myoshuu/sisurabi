@@ -93,3 +93,15 @@ export const clockOut = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Terjadi kesalahan sistem." });
   }
 };
+
+export const deleteAbsensi = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const absensi = await prisma.absensi.delete({ where: { id } });
+    if (absensi)
+      res.status(200).json({ message: "Data absensi berhasil di delete" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+  }
+};

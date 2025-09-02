@@ -1,6 +1,11 @@
 import { Router } from "express";
 import { isAuthenticated } from "@/middleware/auth";
-import { clockIn, clockOut, indexAbsensi } from "@/actions/Absensi";
+import {
+  clockIn,
+  clockOut,
+  deleteAbsensi,
+  indexAbsensi,
+} from "@/actions/Absensi";
 import { authorize } from "@/middleware/authorize";
 
 const router = Router();
@@ -24,6 +29,13 @@ router.put(
   isAuthenticated,
   authorize("SUPER ADMIN", "ADMIN", "USER"),
   clockOut
+);
+
+router.delete(
+  "/:id",
+  isAuthenticated,
+  authorize("SUPER ADMIN", "ADMIN"),
+  deleteAbsensi
 );
 
 export default router;
