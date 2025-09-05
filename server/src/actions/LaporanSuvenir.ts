@@ -167,3 +167,24 @@ export const approveLaporan = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Gagal approve laporan" });
   }
 };
+
+export const rejectLaporan = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const laporan = await prisma.laporanSuvenir.update({
+      where: { id },
+      data: {
+        status: "REJECTED",
+        approvedBy: req.session.loggedIn?.id ?? "",
+        approvedAt: new Date(),
+      },
+    });
+
+    return res
+      .status(200)
+      .json({ mesage: "Laporan berhasil di tolak", laporan });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Gagal reject laporan" });
+  }
+};
