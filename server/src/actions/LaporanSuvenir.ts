@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../helpers/Prisma";
+import dayjs from "dayjs";
 
 export const indexLaporan = async (req: Request, res: Response) => {
   try {
@@ -23,9 +24,32 @@ export const createLaporan = async (req: Request, res: Response) => {
       userId,
     } = req.body;
 
-    if (!req.file) {
+    if (!req.file)
       return res.status(400).json({ message: "Anda harus mengunggah Foto" });
-    }
+
+    const bulanMapping: Record<string, number> = {
+      JANUARI: 0,
+      FEBRUARI: 1,
+      MARET: 2,
+      APRIL: 3,
+      MEI: 4,
+      JUNI: 5,
+      JULI: 6,
+      AGUSTUS: 7,
+      SEPTEMBER: 8,
+      OKTOBER: 9,
+      NOVEMBER: 10,
+      DESEMBER: 11,
+    };
+
+    const now = dayjs();
+    const targetMonth = bulanMapping[periodeBulan.toUpperCase()];
+    const targetEndDate = dayjs()
+      .year(Number(periodeTahun))
+      .month(targetMonth)
+      .endOf("month");
+
+    const status = now.isAfter(targetEndDate) ? "TERLAMBAT" : "PENDING";
 
     const laporan = await prisma.laporanSuvenir.create({
       data: {
@@ -38,6 +62,7 @@ export const createLaporan = async (req: Request, res: Response) => {
         respondenId,
         userId,
         createdBy: req.session.loggedIn?.id ?? "",
+        status,
       },
     });
 
@@ -70,6 +95,12 @@ export const updateLaporan = async (req: Request, res: Response) => {
 
     if (!existing) {
       return res.status(404).json({ message: "Laporan tidak ditemukan" });
+    }
+
+    if (existing.status === "APPROVED") {
+      return res
+        .status(403)
+        .json({ message: "Laporan sudah disetujui, tidak bisa diubah lagi" });
     }
 
     const fotoPath = req.file ? `/uploads/${req.file.filename}` : existing.foto;
@@ -111,5 +142,28 @@ export const deleteLaporan = async (req: Request, res: Response) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+  }
+};
+
+// Approve/Reject System
+export const approveLaporan = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const laporan = await prisma.laporanSuvenir.update({
+      where: { id },
+      data: {
+        status: "APPROVED",
+        approvedBy: req.session.loggedIn?.id ?? "",
+        approvedAt: new Date(),
+      },
+    });
+
+    return res
+      .status(200)
+      .json({ mesage: "Laporan berhasil di approve", laporan });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Gagal approve laporan" });
   }
 };

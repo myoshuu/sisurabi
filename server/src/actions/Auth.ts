@@ -25,11 +25,20 @@ export const login = async (req: Request, res: Response) => {
 
     return res
       .status(200)
-      .json({ message: "Login success", user: req.session.loggedIn });
+      .json({ message: "Login berhasil", user: req.session.loggedIn });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Terjadi kesalahan sistem." });
   }
+};
+
+export const getSession = async (req: Request, res: Response) => {
+  if (!req.session.loggedIn)
+    return res.status(401).json({ message: "Anda belum login" });
+
+  res
+    .status(200)
+    .json({ message: "User didapatkan", user: req.session.loggedIn });
 };
 
 export const register = async (req: Request, res: Response) => {
