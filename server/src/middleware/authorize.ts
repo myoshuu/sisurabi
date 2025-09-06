@@ -9,7 +9,9 @@ export const authorize =
 
     const userRole = req.session.loggedIn.role.nama;
     if (!roles.includes(userRole)) {
-      return res.status(403).json({ message: "Forbidden: insufficient role" });
+      return res
+        .status(403)
+        .json({ message: "Anda tidak memiliki akses untuk fitur ini" });
     }
 
     next();

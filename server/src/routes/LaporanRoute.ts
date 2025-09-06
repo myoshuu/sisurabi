@@ -46,13 +46,13 @@ router.delete(
 
 // Approve/Reject
 router.post(
-  "/approve",
+  "/approve/:id",
   isAuthenticated,
   authorize("SUPER ADMIN", "ADMIN"),
   approveLaporan
 );
 router.post(
-  "/reject",
+  "/reject/:id",
   isAuthenticated,
   authorize("SUPER ADMIN", "ADMIN"),
   rejectLaporan

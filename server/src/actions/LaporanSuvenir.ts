@@ -156,6 +156,13 @@ export const approveLaporan = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
+    const existing = await prisma.laporanSuvenir.findUnique({ where: { id } });
+    if (existing?.status === "APPROVED")
+      return res.status(401).json({
+        message:
+          "Laporan ini sudah di setujui, anda tidak perlu melakukanya berulang kali",
+      });
+
     const laporan = await prisma.laporanSuvenir.update({
       where: { id },
       data: {
@@ -177,6 +184,14 @@ export const approveLaporan = async (req: Request, res: Response) => {
 export const rejectLaporan = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+
+    const existing = await prisma.laporanSuvenir.findUnique({ where: { id } });
+    if (existing?.status === "REJECTED")
+      return res.status(401).json({
+        message:
+          "Laporan ini sudah di tolak, anda tidak perlu melakukanya berulang kali",
+      });
+
     const laporan = await prisma.laporanSuvenir.update({
       where: { id },
       data: {
