@@ -42,14 +42,22 @@ export const createLaporan = async (req: Request, res: Response) => {
       DESEMBER: 11,
     };
 
-    const now = dayjs();
+    const responden = await prisma.responden.findUnique({
+      where: { id: respondenId },
+      select: { createdAt: true },
+    });
+
+    if (!responden)
+      return res.status(401).json({ message: "Responden tidak ditemukan" });
+
     const targetMonth = bulanMapping[periodeBulan.toUpperCase()];
     const targetEndDate = dayjs()
       .year(Number(periodeTahun))
       .month(targetMonth)
       .endOf("month");
 
-    const status = now.isAfter(targetEndDate) ? "TERLAMBAT" : "PENDING";
+    const monthsDiff = targetEndDate.diff(dayjs(responden.createdAt), "month");
+    const status = monthsDiff >= 3 ? "TERLAMBAT" : "PENDING";
 
     const laporan = await prisma.laporanSuvenir.create({
       data: {
@@ -89,9 +97,7 @@ export const updateLaporan = async (req: Request, res: Response) => {
       userId,
     } = req.body;
 
-    const existing = await prisma.laporanSuvenir.findUnique({
-      where: { id },
-    });
+    const existing = await prisma.laporanSuvenir.findUnique({ where: { id } });
 
     if (!existing) {
       return res.status(404).json({ message: "Laporan tidak ditemukan" });
