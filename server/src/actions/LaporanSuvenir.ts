@@ -8,7 +8,7 @@ export const indexLaporan = async (req: Request, res: Response) => {
     return res.status(200).json({ message: "Showing all Laporan.", laporan });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
   }
 };
 
@@ -72,7 +72,7 @@ export const createLaporan = async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
   }
 };
 
@@ -126,7 +126,7 @@ export const updateLaporan = async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
   }
 };
 
@@ -141,7 +141,7 @@ export const deleteLaporan = async (req: Request, res: Response) => {
         .json({ message: "Laporan Suvenir tersebut berhasil dihapus." });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
   }
 };
 

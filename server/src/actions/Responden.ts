@@ -15,7 +15,7 @@ export const indexResponden = async (req: Request, res: Response) => {
       .json({ message: "Berhasil mengambil semua data Responden.", responden });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
   }
 };
 
@@ -33,11 +33,11 @@ export const createResponden = async (req: Request, res: Response) => {
       },
     });
     return res.status(200).json({
-      message: `Responden dengan nama "${responden.nama}" berhasil dibuat.`,
+      message: `Responden dengan nama <b>${responden.nama}</b> berhasil dibuat`,
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
   }
 };
 
@@ -48,14 +48,14 @@ export const showResponden = async (req: Request, res: Response) => {
     if (!responden)
       return res
         .status(400)
-        .json({ message: "Responden dengan ID tersebut tidak ditemukan." });
+        .json({ message: "Responden dengan ID tersebut tidak ditemukan" });
     return res.status(200).json({
-      message: `Menampilkan Responden dengan nama "${responden?.nama}".`,
+      message: `Menampilkan Responden dengan nama <b>${responden?.nama}</b>"`,
       responden,
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
   }
 };
 
@@ -66,7 +66,7 @@ export const updateResponden = async (req: Request, res: Response) => {
 
     const existing = await prisma.responden.findUnique({ where: { id } });
     if (!existing)
-      res.status(404).json({ message: "Responden tidak ditemukan" });
+      res.status(404).json({ message: "Tidak ada responden terkait" });
 
     const responden = await prisma.responden.update({
       where: { id },
@@ -81,11 +81,11 @@ export const updateResponden = async (req: Request, res: Response) => {
     });
 
     return res.status(200).json({
-      message: `Responden dengan nama "${responden.nama}" berhasil di update.`,
+      message: `Responden dengan nama <b>${responden.nama}</b> berhasil di update`,
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
   }
 };
 
@@ -93,13 +93,12 @@ export const deleteResponden = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const responden = await prisma.responden.delete({ where: { id } });
-    if (responden)
-      return res
-        .status(200)
-        .json({ message: "Responden tersebut berhasil dihapus." });
+    await prisma.responden.delete({ where: { id } });
+    return res
+      .status(200)
+      .json({ message: "Responden tersebut berhasil dihapus" });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
   }
 };

@@ -25,7 +25,7 @@ export const indexAbsensi = async (req: Request, res: Response) => {
     }
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
   }
 };
 
@@ -50,7 +50,7 @@ export const statusAbsensi = async (req: Request, res: Response) => {
     }
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
   }
 };
 
@@ -76,7 +76,7 @@ export const clockIn = async (req: Request, res: Response) => {
     if (openSession)
       return res.status(400).json({
         message:
-          "Masih ada absensi yang belum di Clock Out. Silahkan Clock Out terlebih dahulu.",
+          "Masih ada absensi yang belum di Clock Out. Silahkan Clock Out terlebih dahulu",
       });
 
     const absensi = await prisma.absensi.create({
@@ -92,7 +92,7 @@ export const clockIn = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Anda sudah berhasil Clock In", absensi });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
   }
 };
 
@@ -117,7 +117,7 @@ export const clockOut = async (req: Request, res: Response) => {
     if (!openSession) {
       return res.status(400).json({
         message:
-          "Anda belum melakukan Clock In. Silakan Clock In terlebih dahulu.",
+          "Anda belum melakukan Clock In. Silakan Clock In terlebih dahulu",
       });
     }
 
@@ -133,7 +133,7 @@ export const clockOut = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Anda sudah berhasil Clock Out", updated });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
   }
 };
 
@@ -145,6 +145,6 @@ export const deleteAbsensi = async (req: Request, res: Response) => {
       res.status(200).json({ message: "Data absensi berhasil di delete" });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
   }
 };

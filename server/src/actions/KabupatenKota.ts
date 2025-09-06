@@ -9,7 +9,7 @@ export const indexKabupatenKota = async (req: Request, res: Response) => {
       .json({ message: "Mengambil semua data Kabupaten/Kota", kabupatenKota });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
   }
 };
 
@@ -26,6 +26,6 @@ export const getPasarByKabupaten = async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Terjadi kesalahan sistem." });
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
   }
 };
