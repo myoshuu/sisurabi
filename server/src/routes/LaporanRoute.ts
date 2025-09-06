@@ -5,6 +5,8 @@ import {
   createLaporan,
   updateLaporan,
   deleteLaporan,
+  approveLaporan,
+  rejectLaporan,
 } from "@/actions/LaporanSuvenir";
 import { authorize } from "@/middleware/authorize";
 import { uploader } from "@/helpers/Multer";
@@ -43,5 +45,17 @@ router.delete(
 );
 
 // Approve/Reject
+router.post(
+  "/approve",
+  isAuthenticated,
+  authorize("SUPER ADMIN", "ADMIN"),
+  approveLaporan
+);
+router.post(
+  "/reject",
+  isAuthenticated,
+  authorize("SUPER ADMIN", "ADMIN"),
+  rejectLaporan
+);
 
 export default router;
