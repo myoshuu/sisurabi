@@ -22,7 +22,7 @@ const Login = () => {
       const res = await axios.post("/api/auth/login", data);
       console.log(res.data.message);
       setMessage({ type: "success", text: res.data.message });
-      // window.location.href = "/dashboard";
+      window.location.href = "/dashboard";
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
       setMessage({

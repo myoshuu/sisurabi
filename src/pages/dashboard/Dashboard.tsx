@@ -8,8 +8,64 @@ import {
   faChartBar,
   faInbox,
 } from "@fortawesome/free-solid-svg-icons";
+import { useEffect, useState } from "react";
+import axios from "../../helpers/Axios";
+import type { AxiosError } from "axios";
 
 const Dashboard = () => {
+  const [responden, setResponden] = useState<{
+    message: string;
+    responden: Array<{
+      nama: string;
+      createdAt: string;
+    }>;
+    totalResponden: number;
+  } | null>(null);
+
+  const [laporanSuvenir, setLaporanSuvenir] = useState<{
+    message: string;
+    laporan: Array<[]>;
+    totalLaporan: number;
+    totalPending: number;
+    totalTerlambat: number;
+  } | null>(null);
+
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  const fetchResponden = async () => {
+    try {
+      const res = await axios.get("/api/responden");
+      setResponden(res.data);
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      setMessage({
+        type: "error",
+        text: error?.response?.data?.message || error.message,
+      });
+    }
+  };
+
+  const fetchLaporan = async () => {
+    try {
+      const res = await axios.get("/api/laporan");
+      setLaporanSuvenir(res.data);
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      setMessage({
+        type: "error",
+        text: error?.response?.data?.message || error.message,
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchResponden();
+    fetchLaporan();
+  }, []);
+
   return (
     <div className="flex min-h-screen w-full bg-slate-50">
       {/* Main content */}
@@ -43,7 +99,7 @@ const Dashboard = () => {
               className="text-3xl font-extrabold text-gray-900"
               id="totalRespondents"
             >
-              0
+              {responden?.totalResponden || 0}
             </div>
             <div className="text-sm font-medium text-emerald-600">
               Terdaftar aktif
@@ -65,13 +121,13 @@ const Dashboard = () => {
               className="text-3xl font-extrabold text-gray-900"
               id="totalSouvenirs"
             >
-              0
+              {laporanSuvenir?.totalLaporan}
             </div>
             <div
               className="text-sm font-medium text-gray-500"
               id="souvenirGrowth"
             >
-              Belum ada data
+              Laporan terdata
             </div>
           </div>
 
@@ -90,7 +146,7 @@ const Dashboard = () => {
               className="text-3xl font-extrabold text-gray-900"
               id="pendingReports"
             >
-              0
+              {laporanSuvenir?.totalPending}
             </div>
             <div className="text-sm font-medium text-gray-500">
               Menunggu approval
@@ -112,7 +168,7 @@ const Dashboard = () => {
               className="text-3xl font-extrabold text-gray-900"
               id="lateReports"
             >
-              0
+              {laporanSuvenir?.totalTerlambat}
             </div>
             <div
               className="text-sm font-medium text-red-600"
@@ -135,16 +191,46 @@ const Dashboard = () => {
             </p>
           </div>
           <div className="p-6">
-            <div
-              id="recentActivities"
-              className="text-center py-12 text-gray-500"
-            >
-              <FontAwesomeIcon
-                icon={faInbox}
-                className="mx-auto mb-3 text-2xl opacity-30"
-              />
-              <p className="text-sm font-medium">Belum ada aktivitas terbaru</p>
-            </div>
+            {responden && responden.responden.length > 0 ? (
+              <div className="space-y-4">
+                {responden.responden.map((item, index) => (
+                  <div
+                    key={index}
+                    className="rounded-xl border border-gray-200 border-l-4 border-l-green-600 bg-white p-6"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="text-lg font-semibold tracking-wide">
+                        {item.nama || "Nama Responden"}
+                      </h3>
+                    </div>
+                    <div className="text-gray-500" id="totalRespondents">
+                      Responden Baru -{" "}
+                      {new Date(item.createdAt).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </div>
+                    <div className="text-sm font-medium text-emerald-600 mt-3">
+                      Terdaftar aktif
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div
+                id="recentActivities"
+                className="text-center py-12 text-gray-500"
+              >
+                <FontAwesomeIcon
+                  icon={faInbox}
+                  className="mx-auto mb-3 text-2xl opacity-30"
+                />
+                <p className="text-sm font-medium">
+                  Belum ada aktivitas terbaru
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </main>

@@ -13,9 +13,15 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
+import axios from "../helpers/Axios";
+import type { AxiosError } from "axios";
 
 const Sidebar: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -29,13 +35,29 @@ const Sidebar: React.FC = () => {
     { to: "/dashboard/setting", icon: faCog, label: "Pengaturan" },
   ];
 
+  const handleLogout = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      const res = await axios.post("/api/auth/logout");
+      setMessage({ type: "success", text: res.data.message });
+      window.location.href = "/";
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      setMessage({
+        type: "error",
+        text: error?.response?.data?.message || error.message,
+      });
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50 w-full">
       {/* Logout Button */}
-      <form action="/logout" method="POST" className="fixed top-4 right-4 z-50">
+      <form onSubmit={handleLogout} className="fixed top-4 right-4 z-50">
         <button
           type="submit"
-          className="flex items-center bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-2 rounded-lg font-semibold shadow-md hover:-translate-y-0.5 transition-all"
+          className="flex items-center bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-2 rounded-lg font-semibold shadow-md hover:-translate-y-0.5 transition-all cursor-pointer"
         >
           <FontAwesomeIcon icon={faSignOutAlt} className="mr-2 w-5" />
           Logout
@@ -52,9 +74,9 @@ const Sidebar: React.FC = () => {
 
       {/* Sidebar */}
       <div
-        className={`w-72 bg-gradient-to-b from-blue-800 to-blue-900 text-white shadow-lg transform transition-transform duration-300 md:translate-x-0 fixed md:relative z-40 ${
+        className={`fixed top-0 left-0 h-screen w-72 bg-gradient-to-b from-blue-800 to-blue-900 text-white shadow-lg transform transition-transform duration-300 z-40 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        } md:translate-x-0`}
       >
         <div className="p-6 text-center border-b border-white/20">
           <img
@@ -87,7 +109,7 @@ const Sidebar: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-6 overflow-y-auto">
+      <div className="flex-1 p-6 overflow-y-auto md:ml-72">
         <Outlet />
       </div>
     </div>

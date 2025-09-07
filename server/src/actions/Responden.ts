@@ -8,11 +8,16 @@ export const indexResponden = async (req: Request, res: Response) => {
         pasar: { select: { nama: true } },
         kabupatenKota: { select: { nama: true } },
       },
+      orderBy: { createdAt: "desc" },
     });
 
-    return res
-      .status(200)
-      .json({ message: "Berhasil mengambil semua data Responden.", responden });
+    const totalResponden = await prisma.responden.count();
+
+    return res.status(200).json({
+      message: "Berhasil mengambil semua data Responden.",
+      responden,
+      totalResponden,
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Terjadi kesalahan sistem" });

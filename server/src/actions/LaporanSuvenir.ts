@@ -5,7 +5,23 @@ import dayjs from "dayjs";
 export const indexLaporan = async (req: Request, res: Response) => {
   try {
     const laporan = await prisma.laporanSuvenir.findMany();
-    return res.status(200).json({ message: "Showing all Laporan.", laporan });
+    const totalLaporan = await prisma.laporanSuvenir.count();
+    const totalPending = await prisma.laporanSuvenir.count({
+      where: { status: "PENDING" },
+    });
+    const totalTerlambat = await prisma.laporanSuvenir.count({
+      where: { status: "TERLAMBAT" },
+    });
+
+    return res
+      .status(200)
+      .json({
+        message: "Showing all Laporan.",
+        laporan,
+        totalLaporan,
+        totalPending,
+        totalTerlambat,
+      });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Terjadi kesalahan sistem" });
