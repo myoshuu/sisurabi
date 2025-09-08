@@ -26,7 +26,7 @@ const Sidebar: React.FC = () => {
 
   const navItems = [
     { to: "/dashboard", icon: faTachometerAlt, label: "Dashboard" },
-    { to: "/dashboard/respondent", icon: faUsers, label: "Data Responden" },
+    { to: "/dashboard/responden", icon: faUsers, label: "Data Responden" },
     { to: "/dashboard/souvenir", icon: faGift, label: "Laporan Suvenir" },
     { to: "/dashboard/attendance", icon: faCalendarCheck, label: "Absensi" },
     { to: "/dashboard/report", icon: faChartBar, label: "Laporan Analitik" },
@@ -97,6 +97,7 @@ const Sidebar: React.FC = () => {
             <NavLink
               key={item.to}
               to={item.to}
+              end={item.to === "/dashboard"}
               className={({ isActive }) =>
                 `flex items-center px-6 py-3 hover:bg-white/10 transition-colors border-l-4 ${
                   isActive

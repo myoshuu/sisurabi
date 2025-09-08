@@ -91,7 +91,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-50">
+    <section className="flex min-h-screen w-full bg-slate-50">
       {/* Main content */}
       <main className="flex-1 p-6 overflow-y-auto">
         {/* Page Header */}
@@ -260,7 +260,7 @@ const Dashboard = () => {
           </div>
         </div>
       </main>
-    </div>
+    </section>
   );
 };
 
