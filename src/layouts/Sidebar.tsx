@@ -12,16 +12,15 @@ import {
   faBars,
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import axios from "../helpers/Axios";
 import type { AxiosError } from "axios";
+import { useAuth } from "../context/AuthContext";
 
 const Sidebar: React.FC = () => {
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -40,14 +39,19 @@ const Sidebar: React.FC = () => {
 
     try {
       const res = await axios.post("/api/auth/logout");
-      setMessage({ type: "success", text: res.data.message });
-      window.location.href = "/";
+      const flash = { type: "success" as const, text: res.data.message };
+      sessionStorage.setItem("flash", JSON.stringify(flash));
+      setUser(null);
+      navigate("/", { state: { message: flash }, replace: true });
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
-      setMessage({
-        type: "error",
+      const flash = {
+        type: "error" as const,
         text: error?.response?.data?.message || error.message,
-      });
+      };
+      sessionStorage.setItem("flash", JSON.stringify(flash));
+      setUser(null);
+      navigate("/", { state: { message: flash }, replace: true });
     }
   };
 

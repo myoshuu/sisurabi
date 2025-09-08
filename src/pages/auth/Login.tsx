@@ -1,18 +1,39 @@
 import axios from "../../helpers/Axios";
 import { AxiosError } from "axios";
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
 
+  const location = useLocation();
   const navigate = useNavigate();
   const { setUser } = useAuth();
+
+  type Flash = { type: "success" | "error"; text: string };
+  const navigationMsg = (location.state as { message?: Flash } | undefined)
+    ?.message;
+  const [flash, setFlash] = useState<Flash | null>(navigationMsg || null);
+
+  useEffect(() => {
+    if (!navigationMsg) {
+      const raw = sessionStorage.getItem("flash");
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw) as Flash;
+          setFlash(parsed);
+          sessionStorage.removeItem("flash");
+        } catch {
+          sessionStorage.removeItem("flash");
+        }
+      }
+    } else {
+      // clean up the history state so refresh doesn't keep it
+      navigate(location.pathname, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -30,9 +51,8 @@ const Login = () => {
       sessionStorage.setItem("flash", JSON.stringify(flash));
       navigate("/dashboard", { state: { message: flash } });
     } catch (err) {
-      console.log(err);
       const error = err as AxiosError<{ message: string }>;
-      setMessage({
+      setFlash({
         type: "error",
         text: error?.response?.data?.message || error.message,
       });
@@ -55,15 +75,15 @@ const Login = () => {
               Sistem Laporan Suvenir & Absensi
             </p>
           </div>
-          {message && (
+          {flash && (
             <div
               className={`mb-6 p-4 rounded-lg font-semibold text-center ${
-                message.type === "success"
+                flash.type === "success"
                   ? "bg-green-100 text-green-800 border border-green-300"
                   : "bg-red-100 text-red-800 border border-red-300"
               }`}
             >
-              {message.text}
+              {flash.text}
             </div>
           )}
           {/* Form */}
