@@ -19,7 +19,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     axios
       .get("/api/auth/session")
-      .then((res) => setUser(res.data.user))
+      .then((res) => {
+        const u = res.data.user as {
+          id: string;
+          email: string;
+          role?: { nama?: string; name?: string };
+        };
+        if (u) {
+          setUser({
+            id: u.id,
+            email: u.email,
+            role: { name: u.role?.name || (u.role?.nama as string) },
+          });
+        } else {
+          setUser(null);
+        }
+      })
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);

@@ -2,6 +2,7 @@ import express, { Response } from "express";
 import session from "express-session";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import path from "path";
 
 import AuthRoute from "@/routes/AuthRoute";
 import RespondenRoute from "@/routes/RespondenRoute";
@@ -29,6 +30,9 @@ app.use(
     },
   })
 );
+
+// serve uploads statically
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Test Api
 app.get("/api/test", (req, res: Response) => {

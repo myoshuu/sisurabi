@@ -6,6 +6,10 @@ import { useAuth } from "../../context/AuthContext";
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -46,13 +50,27 @@ const Login = () => {
 
     try {
       const res = await axios.post("/api/auth/login", data);
-      setUser(res.data.user);
-      const flash = { type: "success" as const, text: res.data.message };
-      sessionStorage.setItem("flash", JSON.stringify(flash));
-      navigate("/dashboard", { state: { message: flash } });
+      const rawUser = res.data.user as {
+        id: string;
+        email: string;
+        role?: { name?: string; nama?: string };
+      };
+      const normalizedUser = rawUser
+        ? {
+            id: rawUser.id,
+            email: rawUser.email,
+            role: {
+              name: (rawUser.role?.name || rawUser.role?.nama || "").toString(),
+            },
+          }
+        : null;
+      setUser(normalizedUser);
+      const f = { type: "success" as const, text: res.data.message };
+      sessionStorage.setItem("flash", JSON.stringify(f));
+      navigate("/dashboard", { state: { message: f } });
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
-      setFlash({
+      setMessage({
         type: "error",
         text: error?.response?.data?.message || error.message,
       });
@@ -75,15 +93,15 @@ const Login = () => {
               Sistem Laporan Suvenir & Absensi
             </p>
           </div>
-          {flash && (
+          {message && (
             <div
               className={`mb-6 p-4 rounded-lg font-semibold text-center ${
-                flash.type === "success"
+                message.type === "success"
                   ? "bg-green-100 text-green-800 border border-green-300"
                   : "bg-red-100 text-red-800 border border-red-300"
               }`}
             >
-              {flash.text}
+              {message.text}
             </div>
           )}
           {/* Form */}

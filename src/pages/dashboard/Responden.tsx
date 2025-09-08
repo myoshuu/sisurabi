@@ -275,7 +275,8 @@ const Responden = () => {
     }, 350);
     setDebounceTimer(id);
     return () => window.clearTimeout(id);
-  }, [search, searchField, debounceTimer]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, searchField]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

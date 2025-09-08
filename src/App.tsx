@@ -6,6 +6,7 @@ import Responden from "./pages/dashboard/Responden";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
+import LaporanSouvenir from "./pages/dashboard/LaporanSouvenir";
 
 const App = () => {
   return (
@@ -31,6 +32,7 @@ const App = () => {
           >
             <Route index element={<Dashboard />} />
             <Route path="/dashboard/responden" element={<Responden />} />
+            <Route path="/dashboard/souvenir" element={<LaporanSouvenir />} />
           </Route>
         </Routes>
       </BrowserRouter>

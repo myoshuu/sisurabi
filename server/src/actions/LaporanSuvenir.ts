@@ -4,13 +4,60 @@ import dayjs from "dayjs";
 
 export const indexLaporan = async (req: Request, res: Response) => {
   try {
-    const laporan = await prisma.laporanSuvenir.findMany();
-    const totalLaporan = await prisma.laporanSuvenir.count();
+    const q = (req.query.q as string | undefined)?.trim();
+    const field = (req.query.field as string | undefined)?.trim();
+    const status = (req.query.status as string | undefined)?.trim();
+
+    const allowed = new Set(["responden", "surveyor", "jenis", "periode"]);
+    const useField = field && allowed.has(field) ? field : undefined;
+
+    let where: any = {};
+    if (status) where.status = status;
+
+    if (q && useField) {
+      if (useField === "responden")
+        where = { ...where, responden: { nama: { contains: q } } };
+      else if (useField === "surveyor")
+        where = { ...where, user: { email: { contains: q } } };
+      else if (useField === "jenis")
+        where = { ...where, jenis: { contains: q } };
+      else if (useField === "periode")
+        where = {
+          ...where,
+          OR: [
+            { periodeBulan: { contains: q } },
+            { periodeTahun: { equals: Number(q) || 0 } },
+          ],
+        };
+    } else if (q) {
+      where = {
+        ...where,
+        OR: [
+          { nama: { contains: q } },
+          { jenis: { contains: q } },
+          { periodeBulan: { contains: q } },
+          { periodeTahun: { equals: Number(q) || 0 } },
+          { responden: { nama: { contains: q } } },
+          { user: { email: { contains: q } } },
+        ],
+      };
+    }
+
+    const laporan = await prisma.laporanSuvenir.findMany({
+      where,
+      include: {
+        responden: { select: { nama: true } },
+        user: { select: { email: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const totalLaporan = await prisma.laporanSuvenir.count({ where });
     const totalPending = await prisma.laporanSuvenir.count({
-      where: { status: "PENDING" },
+      where: { ...where, status: "PENDING" },
     });
     const totalTerlambat = await prisma.laporanSuvenir.count({
-      where: { status: "TERLAMBAT" },
+      where: { ...where, status: "TERLAMBAT" },
     });
 
     return res.status(200).json({
@@ -71,7 +118,7 @@ export const createLaporan = async (req: Request, res: Response) => {
       .endOf("month");
 
     const monthsDiff = targetEndDate.diff(dayjs(responden.createdAt), "month");
-    const status = monthsDiff >= 3 ? "TERLAMBAT" : "PENDING";
+    const statusCalc = monthsDiff >= 3 ? "TERLAMBAT" : "PENDING";
 
     const laporan = await prisma.laporanSuvenir.create({
       data: {
@@ -84,7 +131,7 @@ export const createLaporan = async (req: Request, res: Response) => {
         respondenId,
         userId,
         createdBy: req.session.loggedIn?.id ?? "",
-        status,
+        status: statusCalc,
       },
     });
 
