@@ -6,10 +6,12 @@ type ToastProps = {
 };
 const Toast = ({ message, type = "success" }: ToastProps) => {
   const [show, setShow] = useState(true);
+
   useEffect(() => {
+    setShow(true);
     const timer = setTimeout(() => setShow(false), 3000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [message, type]);
 
   if (!show) return null;
 
@@ -18,9 +20,8 @@ const Toast = ({ message, type = "success" }: ToastProps) => {
       <div
         className={`px-4 py-2 rounded shadow-lg text-white animate-fade-in-out
         ${type === "success" ? "bg-green-600" : "bg-red-600"}`}
-      >
-        {message}
-      </div>
+        dangerouslySetInnerHTML={{ __html: message }}
+      />
     </div>
   );
 };

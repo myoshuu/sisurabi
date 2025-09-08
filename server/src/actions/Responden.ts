@@ -3,15 +3,42 @@ import { Request, Response } from "express";
 
 export const indexResponden = async (req: Request, res: Response) => {
   try {
+    const q = (req.query.q as string | undefined)?.trim();
+    const field = (req.query.field as string | undefined)?.trim();
+
+    const allowed = new Set(["nama", "telp", "level", "pasar", "kabupaten"]);
+    const useField = field && allowed.has(field) ? field : undefined;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let where: any = undefined;
+    if (q && useField) {
+      if (useField === "pasar") where = { pasar: { nama: { contains: q } } };
+      else if (useField === "kabupaten")
+        where = { kabupatenKota: { nama: { contains: q } } };
+      else where = { [useField]: { contains: q } };
+    } else if (q) {
+      where = {
+        OR: [
+          { nama: { contains: q } },
+          { telp: { contains: q } },
+          { level: { contains: q } },
+          { pasar: { nama: { contains: q } } },
+          { kabupatenKota: { nama: { contains: q } } },
+        ],
+      };
+    }
+
     const responden = await prisma.responden.findMany({
+      where,
       include: {
         pasar: { select: { nama: true } },
         kabupatenKota: { select: { nama: true } },
+        _count: { select: { LaporanSuvenir: true } },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    const totalResponden = await prisma.responden.count();
+    const totalResponden = await prisma.responden.count({ where });
 
     return res.status(200).json({
       message: "Berhasil mengambil semua data Responden.",
@@ -98,7 +125,11 @@ export const deleteResponden = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    await prisma.responden.delete({ where: { id } });
+    await prisma.$transaction([
+      prisma.laporanSuvenir.deleteMany({ where: { respondenId: id } }),
+      prisma.responden.delete({ where: { id } }),
+    ]);
+
     return res
       .status(200)
       .json({ message: "Responden tersebut berhasil dihapus" });
