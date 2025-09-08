@@ -7,6 +7,7 @@ import AuthRoute from "@/routes/AuthRoute";
 import RespondenRoute from "@/routes/RespondenRoute";
 import LaporanRoute from "@/routes/LaporanRoute";
 import AbsensiRoute from "@/routes/AbsensiRoute";
+import KabupatenKotaRoute from "@/routes/KabupatenKotaRoute";
 
 const app = express();
 const PORT = 3000;
@@ -39,6 +40,7 @@ app.use("/api/auth", AuthRoute);
 app.use("/api/responden", RespondenRoute);
 app.use("/api/laporan", LaporanRoute);
 app.use("/api/absensi", AbsensiRoute);
+app.use("/api/kabupaten", KabupatenKotaRoute);
 
 app.listen(PORT, () => {
   console.log(`Server running in port http://localhost:${PORT}`);

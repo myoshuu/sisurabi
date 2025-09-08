@@ -13,15 +13,13 @@ export const indexLaporan = async (req: Request, res: Response) => {
       where: { status: "TERLAMBAT" },
     });
 
-    return res
-      .status(200)
-      .json({
-        message: "Showing all Laporan.",
-        laporan,
-        totalLaporan,
-        totalPending,
-        totalTerlambat,
-      });
+    return res.status(200).json({
+      message: "Showing all Laporan.",
+      laporan,
+      totalLaporan,
+      totalPending,
+      totalTerlambat,
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Terjadi kesalahan sistem" });

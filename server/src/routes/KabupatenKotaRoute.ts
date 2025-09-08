@@ -16,7 +16,7 @@ router.get(
 );
 
 router.get(
-  "/:id/pasar",
+  "/:kabupatenKotaId/pasar",
   isAuthenticated,
   authorize("SUPER ADMIN", "ADMIN", "USER"),
   getPasarByKabupaten

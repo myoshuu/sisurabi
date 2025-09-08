@@ -14,6 +14,7 @@ export const indexAbsensi = async (req: Request, res: Response) => {
       include: { user: { select: { email: true } } },
       orderBy: { clockIn: "desc" },
     });
+
     if (absensi.length === 0) {
       return res
         .status(400)

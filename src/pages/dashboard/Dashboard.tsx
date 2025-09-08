@@ -11,8 +11,37 @@ import {
 import { useEffect, useState } from "react";
 import axios from "../../helpers/Axios";
 import type { AxiosError } from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
+import Toast from "../../components/Toast";
 
 const Dashboard = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  type Flash = { type: "success" | "error"; text: string };
+  const navigationMsg = (location.state as { message?: Flash } | undefined)
+    ?.message;
+  const [flash, setFlash] = useState<Flash | null>(navigationMsg || null);
+
+  useEffect(() => {
+    if (!navigationMsg) {
+      const raw = sessionStorage.getItem("flash");
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw) as Flash;
+          setFlash(parsed);
+          sessionStorage.removeItem("flash");
+        } catch {
+          sessionStorage.removeItem("flash");
+        }
+      }
+    } else {
+      // clean up the history state so refresh doesn't keep it
+      navigate(location.pathname, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [responden, setResponden] = useState<{
     message: string;
     responden: Array<{
@@ -30,18 +59,13 @@ const Dashboard = () => {
     totalTerlambat: number;
   } | null>(null);
 
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
-
   const fetchResponden = async () => {
     try {
       const res = await axios.get("/api/responden");
       setResponden(res.data);
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
-      setMessage({
+      setFlash({
         type: "error",
         text: error?.response?.data?.message || error.message,
       });
@@ -54,7 +78,7 @@ const Dashboard = () => {
       setLaporanSuvenir(res.data);
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
-      setMessage({
+      setFlash({
         type: "error",
         text: error?.response?.data?.message || error.message,
       });
@@ -81,6 +105,8 @@ const Dashboard = () => {
             <span className="font-semibold text-gray-700">User</span>
           </p>
         </div>
+
+        {flash && <Toast message={flash.text} type={flash.type} />}
 
         {/* Stats Grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">

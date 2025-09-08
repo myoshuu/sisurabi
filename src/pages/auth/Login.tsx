@@ -1,6 +1,8 @@
 import axios from "../../helpers/Axios";
 import { AxiosError } from "axios";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
@@ -8,6 +10,9 @@ const Login = () => {
     type: "success" | "error";
     text: string;
   } | null>(null);
+
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,10 +25,12 @@ const Login = () => {
 
     try {
       const res = await axios.post("/api/auth/login", data);
-      console.log(res.data.message);
-      setMessage({ type: "success", text: res.data.message });
-      window.location.href = "/dashboard";
+      setUser(res.data.user);
+      const flash = { type: "success" as const, text: res.data.message };
+      sessionStorage.setItem("flash", JSON.stringify(flash));
+      navigate("/dashboard", { state: { message: flash } });
     } catch (err) {
+      console.log(err);
       const error = err as AxiosError<{ message: string }>;
       setMessage({
         type: "error",

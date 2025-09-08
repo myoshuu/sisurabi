@@ -15,7 +15,7 @@ const uploadAbsensi = uploader("Absensi");
 router.get(
   "/",
   isAuthenticated,
-  authorize("SUPER ADMIN", "ADMIN"),
+  authorize("SUPER ADMIN", "ADMIN", "USER"),
   indexAbsensi
 );
 

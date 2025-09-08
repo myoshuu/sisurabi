@@ -2,9 +2,14 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "../helpers/Axios";
 
 type User = { id: string; email: string; role: { name: string } } | null;
-const AuthContext = createContext<{ user: User; loading: boolean }>({
+const AuthContext = createContext<{
+  user: User;
+  loading: boolean;
+  setUser: React.Dispatch<React.SetStateAction<User>>;
+}>({
   user: null,
   loading: true,
+  setUser: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -20,7 +25,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, setUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -20,7 +20,7 @@ export const getPasarByKabupaten = async (req: Request, res: Response) => {
       where: { kabupatenKotaId },
       orderBy: { nama: "asc" },
     });
-    return res.status(400).json({
+    return res.status(200).json({
       message: "Mengambil semua data pasar berdasarkan kabupaten",
       pasar,
     });
