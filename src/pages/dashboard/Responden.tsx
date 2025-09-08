@@ -19,7 +19,7 @@ const Responden = () => {
     <section id="respondents" className="w-full p-6">
       {/* Page Header */}
       <div className="mb-8 border-b-2 border-gray-200 pb-4">
-        <h1 className="flex items-center gap-3 text-3xl font-bold text-gray-900">
+        <h1 className="flex items-center gap-3 text-3xl md:text-4xl font-bold text-gray-900">
           <FontAwesomeIcon icon={faUsers} className="mr-2 h-7 w-7 " />
           <span>Data Responden</span>
         </h1>
@@ -38,33 +38,32 @@ const Responden = () => {
       {/* Tambah Responden Baru */}
       <div className="mb-8 overflow-hidden rounded-xl shadow-md bg-white">
         <div className="bg-gradient-to-br from-rose-50 to-red-50 border-b border-red-200 p-6">
-          <h2 className="text-red-600 text-xl font-bold flex items-center gap-2">
+          <h2 className="text-red-600 text-xl md:text-2xl font-bold flex items-center gap-2">
             <FontAwesomeIcon icon={faUserPlus} className="mr-2 h-7 w-7 " />
             <span>Tambah Responden Baru</span>
           </h2>
-          <p className="text-red-900/80 text-sm font-medium mt-1">
+          <p className="text-red-900/80 text-sm md:text-base font-medium mt-1">
             Daftarkan responden baru untuk survey
           </p>
         </div>
         <div className="p-6">
-          <form id="respondentForm" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+          <form id="respondentForm" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Nama Lengkap */}
               <div className="space-y-2">
                 <label
                   htmlFor="respondentName"
                   className="block text-gray-700 font-semibold"
                 >
-                  <FontAwesomeIcon icon={faUser} className="mr-1 h-7 w-7 " />{" "}
-                  Nama Lengkap{" "}
-                  <span className="text-red-600 font-normal">*</span>
+                  <FontAwesomeIcon icon={faUser} className="mr-2 h-7 w-7 " />{" "}
+                  Nama Lengkap <span className="text-red-600 text-none">*</span>
                 </label>
                 <input
                   id="respondentName"
                   type="text"
                   required
                   placeholder="Masukkan nama lengkap"
-                  className="w-full rounded-lg border-2 border-gray-200 bg-white py-2 px-4 text-base transition focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
+                  className="w-full rounded-lg border-2 border-gray-200 bg-white px-3 py-3 text-base transition focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
                 />
               </div>
 
@@ -74,14 +73,14 @@ const Responden = () => {
                   htmlFor="respondentPhone"
                   className="block text-gray-700 font-semibold"
                 >
-                  <FontAwesomeIcon icon={faPhone} className="mr-1 h-7 w-7 " />{" "}
+                  <FontAwesomeIcon icon={faPhone} className="mr-2 h-7 w-7 " />{" "}
                   Nomor Telepon
                 </label>
                 <input
                   id="respondentPhone"
                   type="tel"
                   placeholder="08xxxxxxxxxx"
-                  className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2 text-base transition focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
+                  className="w-full rounded-lg border-2 border-gray-200 bg-white px-3 py-3 text-base transition focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
                 />
               </div>
             </div>
@@ -97,12 +96,12 @@ const Responden = () => {
                     icon={faLayerGroup}
                     className="mr-2 h-7 w-7 "
                   />{" "}
-                  Level <span className="text-red-600 font-normal">*</span>
+                  Level <span className="text-red-600 text-none">*</span>
                 </label>
                 <select
                   id="respondentLevel"
                   required
-                  className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2 text-base transition focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
+                  className="w-full rounded-lg border-2 border-gray-200 bg-white px-3 py-3 text-base transition focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
                 >
                   <option value="">Pilih level</option>
                   <option>Pedagang Eceran</option>
@@ -121,12 +120,12 @@ const Responden = () => {
                 >
                   <FontAwesomeIcon icon={faCity} className="mr-2 h-7 w-7 " />{" "}
                   Kabupaten/Kota{" "}
-                  <span className="text-red-600 font-normal">*</span>
+                  <span className="text-red-600 text-none">*</span>
                 </label>
                 <select
                   id="kabupatenKota"
                   required
-                  className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2 text-base transition focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
+                  className="w-full rounded-lg border-2 border-gray-200 bg-white px-3 py-3 text-base transition focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
                 >
                   <option value="">Pilih Kabupaten/Kota</option>
                   <option>Manado</option>
@@ -145,12 +144,12 @@ const Responden = () => {
                   className="block text-gray-700 font-semibold"
                 >
                   <FontAwesomeIcon icon={faStore} className="mr-2 h-7 w-7 " />{" "}
-                  Nama Pasar <span className="text-red-600 font-normal">*</span>
+                  Nama Pasar <span className="text-red-600 text-none">*</span>
                 </label>
                 <select
                   id="marketName"
                   required
-                  className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2 text-base transition focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
+                  className="w-full rounded-lg border-2 border-gray-200 bg-white px-3 py-3 text-base transition focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
                 >
                   <option value="">Pilih nama pasar</option>
                 </select>
