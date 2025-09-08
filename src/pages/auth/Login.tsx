@@ -18,6 +18,7 @@ const Login = () => {
   type Flash = { type: "success" | "error"; text: string };
   const navigationMsg = (location.state as { message?: Flash } | undefined)
     ?.message;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [flash, setFlash] = useState<Flash | null>(navigationMsg || null);
 
   useEffect(() => {

@@ -1,7 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGift,
-  faExclamationTriangle,
   faUserTie,
   faUser,
   faPlusCircle,
@@ -120,6 +119,7 @@ const LaporanSouvenir = () => {
     try {
       const res = await axios.get("/api/responden");
       const options: RespondenOption[] = (res.data?.responden || []).map(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (r: any) => ({ id: r.id, nama: r.nama })
       );
       setRespondents(options);
@@ -311,9 +311,9 @@ const LaporanSouvenir = () => {
     }, 350);
     setDebounceTimer(id);
     return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, searchField, statusFilter]);
 
-  // Outside click to close filter popover
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
