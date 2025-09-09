@@ -15,6 +15,7 @@ import {
   faFilter,
   faEdit,
   faExclamationTriangle,
+  faChartBar,
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect, useRef, useState } from "react";
 import axios from "../../helpers/Axios";
@@ -332,6 +333,13 @@ const LaporanSouvenir: React.FC = () => {
         <p className="text-gray-500 text-sm mt-1">
           Kelola laporan pemberian suvenir kepada responden
         </p>
+        <button
+          type="button"
+          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-red-600 to-red-700 px-4 py-2 text-white font-semibold uppercase tracking-wide text-sm shadow transition-transform hover:-translate-y-0.5 hover:shadow-lg focus:outline-none"
+        >
+          <FontAwesomeIcon icon={faChartBar} className="mr-1 h-7 w-7 " />
+          <span>Lihat Laporan Analitik</span>
+        </button>
       </div>
 
       {/* Regulation */}

@@ -11,6 +11,7 @@ import {
   faExclamationTriangle,
   faFilter,
   faTrash,
+  faChartBar,
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "../../helpers/Axios";
@@ -343,6 +344,13 @@ const Absensi: React.FC = () => {
         <p className="text-gray-500 text-sm mt-1">
           Kelola absensi surveyor dan karyawan Bank Indonesia
         </p>
+        <button
+          type="button"
+          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-red-600 to-red-700 px-4 py-2 text-white font-semibold uppercase tracking-wide text-sm shadow transition-transform hover:-translate-y-0.5 hover:shadow-lg focus:outline-none"
+        >
+          <FontAwesomeIcon icon={faChartBar} className="mr-1 h-7 w-7 " />
+          <span>Lihat Laporan Analitik</span>
+        </button>
       </div>
 
       {/* Regulation */}
@@ -492,13 +500,6 @@ const Absensi: React.FC = () => {
           </p>
         </div>
         <div className="p-6">
-          <div className="flex gap-4 mb-6 flex-wrap">
-            <button className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 px-4 py-2 text-white font-semibold uppercase tracking-wide text-sm shadow transition-transform hover:-translate-y-0.5 focus:outline-none cursor-pointer">
-              <FontAwesomeIcon icon={faDownload} className="h-4 w-4" />
-              Download Log Book
-            </button>
-          </div>
-
           {/* Search Box */}
           <div className="relative mb-6 flex items-center gap-3">
             <div className="relative flex-1">
