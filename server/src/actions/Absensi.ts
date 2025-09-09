@@ -9,21 +9,49 @@ export const indexAbsensi = async (req: Request, res: Response) => {
         .status(401)
         .json({ message: "Anda harus login terlebih dahulu" });
 
+    const q = (req.query.q as string | undefined)?.trim();
+    const field = (req.query.field as string | undefined)?.trim();
+
+    const allowed = new Set(["catatan", "tanggal"]);
+    const useField = field && allowed.has(field) ? field : undefined;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let where: any = { userId };
+
+    if (q && useField) {
+      if (useField === "catatan") {
+        where = { ...where, catatan: { contains: q } };
+      } else if (useField === "tanggal") {
+        // Search by date range or specific date
+        const searchDate = new Date(q);
+        if (!isNaN(searchDate.getTime())) {
+          const startOfDay = new Date(searchDate);
+          startOfDay.setHours(0, 0, 0, 0);
+          const endOfDay = new Date(searchDate);
+          endOfDay.setHours(23, 59, 59, 999);
+          where = {
+            ...where,
+            clockIn: {
+              gte: startOfDay,
+              lte: endOfDay,
+            },
+          };
+        }
+      }
+    } else if (q) {
+      where = {
+        ...where,
+        OR: [{ catatan: { contains: q } }],
+      };
+    }
+
     const absensi = await prisma.absensi.findMany({
-      where: { userId },
+      where,
       include: { user: { select: { email: true } } },
       orderBy: { clockIn: "desc" },
     });
 
-    if (absensi.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "Belum ada absensi, silahkan melakukan Clock In" });
-    } else {
-      return res
-        .status(200)
-        .json({ message: "Mengambil data absensi", absensi });
-    }
+    return res.status(200).json({ message: "Mengambil data absensi", absensi });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Terjadi kesalahan sistem" });

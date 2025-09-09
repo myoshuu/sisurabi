@@ -5,6 +5,7 @@ import {
   clockOut,
   deleteAbsensi,
   indexAbsensi,
+  statusAbsensi,
 } from "@/actions/Absensi";
 import { authorize } from "@/middleware/authorize";
 import { uploader } from "@/helpers/Multer";
@@ -17,6 +18,13 @@ router.get(
   isAuthenticated,
   authorize("SUPER ADMIN", "ADMIN", "USER"),
   indexAbsensi
+);
+
+router.get(
+  "/status",
+  isAuthenticated,
+  authorize("SUPER ADMIN", "ADMIN", "USER"),
+  statusAbsensi
 );
 
 router.post(
