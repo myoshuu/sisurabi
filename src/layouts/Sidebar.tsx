@@ -28,7 +28,7 @@ const Sidebar: React.FC = () => {
     { to: "/dashboard", icon: faTachometerAlt, label: "Dashboard" },
     { to: "/dashboard/responden", icon: faUsers, label: "Data Responden" },
     { to: "/dashboard/souvenir", icon: faGift, label: "Laporan Suvenir" },
-    { to: "/dashboard/attendance", icon: faCalendarCheck, label: "Absensi" },
+    { to: "/dashboard/absensi", icon: faCalendarCheck, label: "Absensi" },
     { to: "/dashboard/report", icon: faChartBar, label: "Laporan Analitik" },
     { to: "/dashboard/user", icon: faUserCog, label: "Manajemen Pengguna" },
     { to: "/dashboard/setting", icon: faCog, label: "Pengaturan" },

@@ -40,7 +40,7 @@ type RespondenItem = {
 type Kabupaten = { id: string; nama: string };
 type Pasar = { id: string; nama: string };
 
-const Responden = () => {
+const Responden: React.FC = () => {
   const [responden, setResponden] = useState<{
     responden: Array<RespondenItem>;
     totalResponden: number;
@@ -67,7 +67,7 @@ const Responden = () => {
   const [editId, setEditId] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
-  const [searchField, setSearchField] = useState<string>(""); // '', 'nama', 'telp', 'level', 'pasar', 'kabupaten'
+  const [searchField, setSearchField] = useState<string>("");
   const [searching, setSearching] = useState(false);
   const [debounceTimer, setDebounceTimer] = useState<number | null>(null);
   const [showFilter, setShowFilter] = useState(false);

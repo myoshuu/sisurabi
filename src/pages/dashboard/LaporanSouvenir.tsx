@@ -14,8 +14,9 @@ import {
   faSearch,
   faFilter,
   faEdit,
+  faExclamationTriangle,
 } from "@fortawesome/free-solid-svg-icons";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "../../helpers/Axios";
 import type { AxiosError } from "axios";
 import Toast from "../../components/Toast";
@@ -56,12 +57,11 @@ const bulanOptions = [
   "Desember",
 ];
 
-const LaporanSouvenir = () => {
+const LaporanSouvenir: React.FC = () => {
   const { user } = useAuth();
 
   const [flash, setFlash] = useState<Flash | null>(null);
 
-  // Helper to resolve absolute file URL
   const absoluteUrl = (path: string | null | undefined) => {
     if (!path) return "";
     return /^https?:\/\//i.test(path)
@@ -69,7 +69,6 @@ const LaporanSouvenir = () => {
       : `${axios.defaults.baseURL}${path}`;
   };
 
-  // Search/filters
   const [search, setSearch] = useState("");
   const [searchField, setSearchField] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -78,16 +77,13 @@ const LaporanSouvenir = () => {
   const [showFilter, setShowFilter] = useState(false);
   const filterRef = useRef<HTMLDivElement | null>(null);
 
-  // List
   const [laporan, setLaporan] = useState<LaporanItem[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
 
-  // Respondent options
   const [respondents, setRespondents] = useState<RespondenOption[]>([]);
 
-  // Form state (create/edit)
   const [editId, setEditId] = useState<string | null>(null);
   const [formNama, setFormNama] = useState("");
   const [formJenis, setFormJenis] = useState("");
@@ -100,7 +96,6 @@ const LaporanSouvenir = () => {
   const [formFoto, setFormFoto] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Image preview modal
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const closePreview = () => setPreviewSrc(null);
 
@@ -153,7 +148,6 @@ const LaporanSouvenir = () => {
     }
   };
 
-  // Create/Update submit
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (
@@ -207,7 +201,6 @@ const LaporanSouvenir = () => {
     }
   };
 
-  // Edit prefill (role gate: USER can edit only if not approved)
   const canEditItem = (item: LaporanItem) => {
     const role = user?.role?.name;
     if (role === "USER")
@@ -228,7 +221,6 @@ const LaporanSouvenir = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Delete
   const handleDelete = async (id: string) => {
     setDeletingId(id);
     const prev = laporan;
@@ -251,7 +243,6 @@ const LaporanSouvenir = () => {
     }
   };
 
-  // Approve/Reject
   const handleApprove = async (id: string) => {
     setApprovingId(id);
     const prev = laporan;
@@ -297,7 +288,6 @@ const LaporanSouvenir = () => {
     }
   };
 
-  // Debounce search
   useEffect(() => {
     if (debounceTimer) window.clearTimeout(debounceTimer);
     setSearching(true);
@@ -344,6 +334,39 @@ const LaporanSouvenir = () => {
         <p className="text-gray-500 text-sm mt-1">
           Kelola laporan pemberian suvenir kepada responden
         </p>
+      </div>
+
+      {/* Regulation */}
+      <div className="mb-8 overflow-hidden rounded-xl shadow-md bg-white">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-50 border-b border-blue-200 p-6">
+          <h2 className="text-blue-600 text-xl font-bold flex items-center gap-2">
+            <FontAwesomeIcon icon={faExclamationTriangle} className="h-6 w-6" />
+            Peraturan Pemberian Souvenir
+          </h2>
+          <p className="text-blue-900/80 text-sm font-medium mt-1">
+            Ketentuan dan aturan yang harus dipatuhi
+          </p>
+        </div>
+        <div className="p-6 ">
+          <ul className="list-disc list-inside text-gray-600 space-y-2">
+            <li>Setiap responden hanya dapat menerima 1 suvenir per periode</li>
+            <li>Wajib melampirkan foto bukti pemberian suvenir</li>
+            <li>
+              <strong>
+                Laporan dapat dibuat kapan saja dalam periode bulan yang
+                bersangkutan
+              </strong>
+            </li>
+            <li>
+              <strong>
+                Jika laporan dibuat setelah periode bulan berakhir, akan
+                ditandai sebagai TERLAMBAT
+              </strong>
+            </li>
+            <li>Data surveyor dan responden harus lengkap dan akurat</li>
+            <li>Laporan akan direview oleh admin sebelum disetujui</li>
+          </ul>
+        </div>
       </div>
 
       {/* Create Report Card */}

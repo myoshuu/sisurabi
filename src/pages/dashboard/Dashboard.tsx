@@ -8,13 +8,13 @@ import {
   faChartBar,
   faInbox,
 } from "@fortawesome/free-solid-svg-icons";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "../../helpers/Axios";
 import type { AxiosError } from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import Toast from "../../components/Toast";
 
-const Dashboard = () => {
+const Dashboard: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -36,7 +36,6 @@ const Dashboard = () => {
         }
       }
     } else {
-      // clean up the history state so refresh doesn't keep it
       navigate(location.pathname, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
