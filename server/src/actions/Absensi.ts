@@ -1,5 +1,7 @@
 import { prisma } from "@/helpers/Prisma";
 import { Request, Response } from "express";
+import fs from "fs";
+import path from "path";
 
 export const indexAbsensi = async (req: Request, res: Response) => {
   try {
@@ -22,7 +24,6 @@ export const indexAbsensi = async (req: Request, res: Response) => {
       if (useField === "catatan") {
         where = { ...where, catatan: { contains: q } };
       } else if (useField === "tanggal") {
-        // Search by date range or specific date
         const searchDate = new Date(q);
         if (!isNaN(searchDate.getTime())) {
           const startOfDay = new Date(searchDate);
@@ -41,7 +42,19 @@ export const indexAbsensi = async (req: Request, res: Response) => {
     } else if (q) {
       where = {
         ...where,
-        OR: [{ catatan: { contains: q } }],
+        OR: [
+          { catatan: { contains: q } },
+          ...(isNaN(Date.parse(q))
+            ? []
+            : [
+                {
+                  clockIn: {
+                    gte: new Date(new Date(q).setHours(0, 0, 0, 0)),
+                    lte: new Date(new Date(q).setHours(23, 59, 59, 999)),
+                  },
+                },
+              ]),
+        ],
       };
     }
 
@@ -110,7 +123,7 @@ export const clockIn = async (req: Request, res: Response) => {
 
     const absensi = await prisma.absensi.create({
       data: {
-        fotoClockIn: `/uploads/absensi/${req.file.filename}`,
+        fotoClockIn: `/uploads/${req.file.filename}`,
         clockIn: new Date(),
         catatan,
         userId,
@@ -153,7 +166,7 @@ export const clockOut = async (req: Request, res: Response) => {
     const updated = await prisma.absensi.update({
       where: { id: openSession.id },
       data: {
-        fotoClockOut: `/uploads/absensi/${req.file.filename}`,
+        fotoClockOut: `/uploads/${req.file.filename}`,
         clockOut: new Date(),
         updatedBy: req.session.loggedIn?.id ?? "",
       },
@@ -169,9 +182,62 @@ export const clockOut = async (req: Request, res: Response) => {
 export const deleteAbsensi = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const absensi = await prisma.absensi.delete({ where: { id } });
-    if (absensi)
-      res.status(200).json({ message: "Data absensi berhasil di delete" });
+
+    const absensi = await prisma.absensi.findUnique({ where: { id } });
+    if (!absensi) {
+      return res.status(404).json({ message: "Data absensi tidak ditemukan" });
+    }
+
+    await prisma.absensi.delete({ where: { id } });
+
+    const deleteFile = (filePath: string) => {
+      if (filePath) {
+        const cleanPath = filePath.startsWith("/")
+          ? filePath.substring(1)
+          : filePath;
+        const fullPath = path.join(process.cwd(), cleanPath);
+        console.log(`Looking for file at: ${fullPath}`);
+
+        if (fs.existsSync(fullPath)) {
+          try {
+            fs.unlinkSync(fullPath);
+            console.log(`Deleted file: ${fullPath}`);
+          } catch (fileErr) {
+            console.error(`Error deleting file ${fullPath}:`, fileErr);
+          }
+        } else {
+          console.log(`File not found: ${fullPath}`);
+          const altPath = path.join(process.cwd(), "server", cleanPath);
+          console.log(`Trying alternative path: ${altPath}`);
+          if (fs.existsSync(altPath)) {
+            try {
+              fs.unlinkSync(altPath);
+              console.log(`Deleted file from alternative path: ${altPath}`);
+            } catch (fileErr) {
+              console.error(`Error deleting file ${altPath}:`, fileErr);
+            }
+          } else {
+            console.log(`File not found at alternative path: ${altPath}`);
+          }
+        }
+      }
+    };
+
+    if (absensi.fotoClockIn) {
+      console.log(
+        `Attempting to delete clock in photo: ${absensi.fotoClockIn}`
+      );
+      deleteFile(absensi.fotoClockIn);
+    }
+
+    if (absensi.fotoClockOut) {
+      console.log(
+        `Attempting to delete clock out photo: ${absensi.fotoClockOut}`
+      );
+      deleteFile(absensi.fotoClockOut);
+    }
+
+    res.status(200).json({ message: "Data absensi berhasil di delete" });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Terjadi kesalahan sistem" });

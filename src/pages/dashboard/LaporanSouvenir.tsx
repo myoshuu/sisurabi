@@ -319,8 +319,6 @@ const LaporanSouvenir: React.FC = () => {
     fetchLaporan();
   }, []);
 
-  console.log(previewSrc);
-
   return (
     <section id="souvenirs" className="w-full p-6">
       {flash && <Toast message={flash.text} type={flash.type} />}

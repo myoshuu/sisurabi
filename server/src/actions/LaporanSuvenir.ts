@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { prisma } from "../helpers/Prisma";
 import dayjs from "dayjs";
+import fs from "fs";
+import path from "path";
 
 export const indexLaporan = async (req: Request, res: Response) => {
   try {
@@ -201,11 +203,60 @@ export const deleteLaporan = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const laporan = await prisma.laporanSuvenir.delete({ where: { id } });
-    if (laporan)
-      return res
-        .status(200)
-        .json({ message: "Laporan Suvenir tersebut berhasil dihapus." });
+    // First, get the laporan record to access file path
+    const laporan = await prisma.laporanSuvenir.findUnique({ where: { id } });
+    if (!laporan) {
+      return res.status(404).json({ message: "Laporan tidak ditemukan" });
+    }
+
+    // Delete the database record
+    await prisma.laporanSuvenir.delete({ where: { id } });
+
+    // Delete the actual file
+    const deleteFile = (filePath: string) => {
+      if (filePath) {
+        // Remove the leading slash and construct the full path
+        const cleanPath = filePath.startsWith("/")
+          ? filePath.substring(1)
+          : filePath;
+        const fullPath = path.join(process.cwd(), cleanPath);
+        console.log(`Looking for file at: ${fullPath}`);
+
+        if (fs.existsSync(fullPath)) {
+          try {
+            fs.unlinkSync(fullPath);
+            console.log(`Deleted file: ${fullPath}`);
+          } catch (fileErr) {
+            console.error(`Error deleting file ${fullPath}:`, fileErr);
+          }
+        } else {
+          console.log(`File not found: ${fullPath}`);
+          // Try alternative path in case the file is in server/uploads
+          const altPath = path.join(process.cwd(), "server", cleanPath);
+          console.log(`Trying alternative path: ${altPath}`);
+          if (fs.existsSync(altPath)) {
+            try {
+              fs.unlinkSync(altPath);
+              console.log(`Deleted file from alternative path: ${altPath}`);
+            } catch (fileErr) {
+              console.error(`Error deleting file ${altPath}:`, fileErr);
+            }
+          } else {
+            console.log(`File not found at alternative path: ${altPath}`);
+          }
+        }
+      }
+    };
+
+    // Delete the photo file
+    if (laporan.foto) {
+      console.log(`Attempting to delete laporan photo: ${laporan.foto}`);
+      deleteFile(laporan.foto);
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Laporan Suvenir tersebut berhasil dihapus." });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Terjadi kesalahan sistem" });

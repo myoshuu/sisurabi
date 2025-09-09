@@ -12,7 +12,7 @@ import {
   faFilter,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "../../helpers/Axios";
 import type { AxiosError } from "axios";
 import Toast from "../../components/Toast";
@@ -46,6 +46,7 @@ const Absensi: React.FC = () => {
   const [clockedIn, setClockedIn] = useState(false);
   const [flash, setFlash] = useState<Flash | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [catatan, setCatatan] = useState("");
 
   const [search, setSearch] = useState("");
   const [searchField, setSearchField] = useState<string>("");
@@ -56,6 +57,14 @@ const Absensi: React.FC = () => {
 
   const [absensi, setAbsensi] = useState<AbsensiItem[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+
+  const absoluteUrl = (path: string | null | undefined) => {
+    if (!path) return "";
+    return /^https?:\/\//i.test(path)
+      ? path
+      : `${axios.defaults.baseURL}${path}`;
+  };
 
   useEffect(() => {
     const updateTime = () => {
@@ -87,6 +96,77 @@ const Absensi: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, searchField]);
 
+  const normalizeSearchQuery = (query: string): string => {
+    // Try to normalize date formats
+    const trimmed = query.trim();
+
+    // Handle common Indonesian date formats
+    if (
+      trimmed.match(
+        /^\d{1,2}\s+(september|oktober|november|desember|januari|februari|maret|april|mei|juni|juli|agustus)/i
+      )
+    ) {
+      // Convert Indonesian month names to English
+      const monthMap: Record<string, string> = {
+        januari: "january",
+        februari: "february",
+        maret: "march",
+        april: "april",
+        mei: "may",
+        juni: "june",
+        juli: "july",
+        agustus: "august",
+        september: "september",
+        oktober: "october",
+        november: "november",
+        desember: "december",
+      };
+
+      const parts = trimmed.split(" ");
+      if (parts.length >= 2) {
+        const day = parts[0];
+        const month = monthMap[parts[1].toLowerCase()] || parts[1];
+        const year = parts[2] || new Date().getFullYear().toString();
+        return `${month} ${day}, ${year}`;
+      }
+    }
+
+    return trimmed;
+  };
+
+  const fetchAbsensi = useCallback(async (q?: string, field?: string) => {
+    try {
+      const params: Record<string, string> = {};
+      if (q) {
+        params.q = normalizeSearchQuery(q);
+      }
+      if (field) params.field = field;
+
+      const res = await axios.get("/api/absensi", {
+        params: Object.keys(params).length ? params : undefined,
+      });
+
+      setAbsensi(res.data?.absensi || []);
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      console.error("Search error:", error);
+      setFlash({
+        type: "error",
+        text: error?.response?.data?.message || error.message,
+      });
+    } finally {
+      setSearching(false);
+    }
+  }, []);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const reader = new FileReader();
+      reader.onload = () => setPhotoPreview(reader.result as string);
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
@@ -100,35 +180,7 @@ const Absensi: React.FC = () => {
   useEffect(() => {
     fetchAbsensi();
     checkStatus();
-  }, []);
-
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      const reader = new FileReader();
-      reader.onload = () => setPhotoPreview(reader.result as string);
-      reader.readAsDataURL(e.target.files[0]);
-    }
-  };
-
-  const fetchAbsensi = async (q?: string, field?: string) => {
-    try {
-      const params: Record<string, string> = {};
-      if (q) params.q = q;
-      if (field) params.field = field;
-      const res = await axios.get("/api/absensi", {
-        params: Object.keys(params).length ? params : undefined,
-      });
-      setAbsensi(res.data?.absensi || []);
-    } catch (err) {
-      const error = err as AxiosError<{ message: string }>;
-      setFlash({
-        type: "error",
-        text: error?.response?.data?.message || error.message,
-      });
-    } finally {
-      setSearching(false);
-    }
-  };
+  }, [fetchAbsensi]);
 
   const checkStatus = async () => {
     try {
@@ -171,6 +223,14 @@ const Absensi: React.FC = () => {
       return;
     }
 
+    if (!catatan.trim()) {
+      setFlash({
+        type: "error",
+        text: "Anda harus mengisi catatan terlebih dahulu",
+      });
+      return;
+    }
+
     setSubmitting(true);
     try {
       const formData = new FormData();
@@ -180,7 +240,7 @@ const Absensi: React.FC = () => {
       if (fileInput?.files?.[0]) {
         formData.append("fotoClockIn", fileInput.files[0]);
       }
-      formData.append("catatan", "Clock In");
+      formData.append("catatan", catatan);
 
       const res = await axios.post("/api/absensi/clockin", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -193,6 +253,7 @@ const Absensi: React.FC = () => {
       });
       await fetchAbsensi();
       setPhotoPreview(null);
+      setCatatan("");
       if (fileInput) fileInput.value = "";
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
@@ -326,7 +387,7 @@ const Absensi: React.FC = () => {
 
           {/* Upload Foto */}
           <div className="mb-8">
-            <h3 className="text-center text-red-600 font-semibold mb-4 flex items-center justify-center gap-2">
+            <h3 className=" text-red-600 font-semibold mb-4 flex items-center gap-2">
               <FontAwesomeIcon icon={faCamera} className="h-5 w-5" />
               Upload Foto (Wajib)
             </h3>
@@ -363,6 +424,21 @@ const Absensi: React.FC = () => {
               accept="image/*"
               className="hidden"
               onChange={handlePhotoUpload}
+            />
+          </div>
+
+          {/* Catatan */}
+          <div className="mb-6">
+            <h3 className=" text-red-600 font-semibold mb-4 flex items-center  gap-2">
+              <FontAwesomeIcon icon={faUserClock} className="h-5 w-5" />
+              Catatan Kegiatan (Wajib)
+            </h3>
+            <textarea
+              value={catatan}
+              onChange={(e) => setCatatan(e.target.value)}
+              placeholder="Masukkan catatan kegiatan yang akan dilakukan..."
+              className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
+              rows={3}
             />
           </div>
 
@@ -434,7 +510,7 @@ const Absensi: React.FC = () => {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Cari berdasarkan tanggal atau catatan..."
+                placeholder="Cari berdasarkan tanggal (9 September) atau catatan..."
                 className="w-full rounded-full border-2 border-gray-200 pl-12 pr-4 py-2 text-base transition focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
               />
               {searching && (
@@ -535,7 +611,7 @@ const Absensi: React.FC = () => {
                           <span className="text-sm font-medium text-gray-600">
                             #{index + 1}
                           </span>
-                          <div>
+                          <div className="flex-1">
                             <p className="text-sm font-medium text-gray-800">
                               Clock In:{" "}
                               {new Date(entry.clockIn).toLocaleTimeString(
@@ -550,9 +626,48 @@ const Absensi: React.FC = () => {
                                 )}
                               </p>
                             )}
+                            {entry.catatan && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                Catatan: {entry.catatan}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
+                          {/* Photo Buttons */}
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => {
+                                setPreviewSrc(absoluteUrl(entry.fotoClockIn));
+                              }}
+                              className="px-2 py-1 rounded-md bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 inline-flex items-center gap-1 cursor-pointer"
+                              title="Lihat Foto Clock In"
+                            >
+                              <FontAwesomeIcon
+                                icon={faCamera}
+                                className="h-3 w-3"
+                              />
+                              In
+                            </button>
+                            {entry.fotoClockOut && (
+                              <button
+                                onClick={() => {
+                                  setPreviewSrc(
+                                    absoluteUrl(entry.fotoClockOut)
+                                  );
+                                }}
+                                className="px-2 py-1 rounded-md bg-green-600 text-white text-xs font-medium hover:bg-green-700 inline-flex items-center gap-1 cursor-pointer"
+                                title="Lihat Foto Clock Out"
+                              >
+                                <FontAwesomeIcon
+                                  icon={faCamera}
+                                  className="h-3 w-3"
+                                />
+                                Out
+                              </button>
+                            )}
+                          </div>
+
                           <span
                             className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${
                               entry.clockOut
@@ -562,6 +677,7 @@ const Absensi: React.FC = () => {
                           >
                             {entry.clockOut ? "Selesai" : "Sedang Bekerja"}
                           </span>
+
                           {(user?.role?.name === "SUPER ADMIN" ||
                             user?.role?.name === "ADMIN") && (
                             <button
@@ -644,6 +760,33 @@ const Absensi: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Photo Preview Modal */}
+      {previewSrc && (
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+          onClick={() => setPreviewSrc(null)}
+        >
+          <div
+            className="max-w-3xl max-h-[85vh] p-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={previewSrc}
+              alt="Foto Absensi"
+              className="max-h-[80vh] w-auto rounded shadow-lg"
+            />
+            <div className="text-center mt-3">
+              <button
+                onClick={() => setPreviewSrc(null)}
+                className="px-4 py-2 rounded-md bg-white text-gray-800 border border-gray-300 hover:bg-gray-50 cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
