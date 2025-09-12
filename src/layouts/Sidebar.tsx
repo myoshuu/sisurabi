@@ -84,9 +84,9 @@ const Sidebar: React.FC = () => {
       >
         <div className="p-6 text-center border-b border-white/20">
           <img
-            src="/images/LOGOGRAM-02.png"
+            src="/BI_GRAM_WHITE.webp"
             alt="BI Logo"
-            className="w-20 h-auto mx-auto mb-2 filter invert"
+            className="w-20 h-auto mx-auto mb-2"
           />
           <h2 className="text-xl font-bold">Bank Indonesia</h2>
           <p className="text-white/80 text-sm">Sistem Manajemen Suvenir</p>

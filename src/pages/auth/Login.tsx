@@ -3,13 +3,11 @@ import { AxiosError } from "axios";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -18,7 +16,6 @@ const Login = () => {
   type Flash = { type: "success" | "error"; text: string };
   const navigationMsg = (location.state as { message?: Flash } | undefined)
     ?.message;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [flash, setFlash] = useState<Flash | null>(navigationMsg || null);
 
   useEffect(() => {
@@ -34,7 +31,6 @@ const Login = () => {
         }
       }
     } else {
-      // clean up the history state so refresh doesn't keep it
       navigate(location.pathname, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,7 +67,7 @@ const Login = () => {
       navigate("/dashboard", { state: { message: f } });
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
-      setMessage({
+      setFlash({
         type: "error",
         text: error?.response?.data?.message || error.message,
       });
@@ -86,23 +82,23 @@ const Login = () => {
           {/* Logo */}
           <div className="text-center mb-8">
             <img
-              src="/logobi.jpg"
+              src="/BI_Dashboard.webp"
               alt="Bank Indonesia Logo"
-              className="w-72 mx-auto mb-4 object-contain"
+              className="w-72 mx-auto object-contain"
             />
             <p className="text-gray-500 text-sm font-medium">
               Sistem Laporan Suvenir & Absensi
             </p>
           </div>
-          {message && (
+          {flash && (
             <div
               className={`mb-6 p-4 rounded-lg font-semibold text-center ${
-                message.type === "success"
+                flash.type === "success"
                   ? "bg-green-100 text-green-800 border border-green-300"
                   : "bg-red-100 text-red-800 border border-red-300"
               }`}
             >
-              {message.text}
+              {flash.text}
             </div>
           )}
           {/* Form */}
@@ -159,7 +155,7 @@ const Login = () => {
           {/* Demo Accounts */}
           <div className="mt-8 p-6 rounded-lg border-l-4 border-red-600 bg-gradient-to-br from-red-50 to-red-100">
             <h3 className="text-red-600 font-bold mb-3 text-sm">
-              <i className="fas fa-info-circle"></i> Demo Accounts:
+              <FontAwesomeIcon icon={faInfoCircle} /> Demo Accounts
             </h3>
             <p className="text-red-900 text-sm mb-1 font-medium">
               <strong>Super Admin:</strong> admin@bi.go.id / admin123
