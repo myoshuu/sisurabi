@@ -5,8 +5,8 @@ const prisma = new PrismaClient();
 
 const main = async () => {
   await prisma.$transaction([
-    prisma.laporanSuvenir.deleteMany(),
     prisma.absensi.deleteMany(),
+    prisma.laporanSuvenir.deleteMany(),
     prisma.responden.deleteMany(),
     prisma.pasar.deleteMany(),
     prisma.kabupatenKota.deleteMany(),

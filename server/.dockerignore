@@ -1,6 +1,5 @@
 # Prevent large/unnecessary files from being sent to the Docker build context
 node_modules
-server/node_modules
 **/npm-debug.log*
 **/yarn-error.log*
 **/pnpm-debug.log*
@@ -16,11 +15,6 @@ dist
 .git
 .gitignore
 
-# Docker/Compose files themselves
-Dockerfile
-docker-compose.yml
-compose.yaml
-
 # Env and OS/editor junk
 .env
 .env.*
@@ -28,5 +22,5 @@ compose.yaml
 .vscode
 .idea
 
-# Local uploads (mounted via volumes in compose)
-server/uploads
+# Prisma generated client (will be generated in-image)
+src/generated

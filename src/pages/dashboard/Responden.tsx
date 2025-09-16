@@ -21,6 +21,7 @@ import axios from "../../helpers/Axios";
 import type { AxiosError } from "axios";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Toast from "../../components/Toast";
+import { useNavigate } from "react-router";
 
 type Flash = { type: "success" | "error"; text: string };
 
@@ -45,6 +46,8 @@ const Responden: React.FC = () => {
     responden: Array<RespondenItem>;
     totalResponden: number;
   } | null>(null);
+
+  const navigate = useNavigate();
 
   const [flash, setFlash] = useState<Flash | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -303,7 +306,8 @@ const Responden: React.FC = () => {
         </p>
         <button
           type="button"
-          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-red-600 to-red-700 px-4 py-2 text-white font-semibold uppercase tracking-wide text-sm shadow transition-transform hover:-translate-y-0.5 hover:shadow-lg focus:outline-none"
+          onClick={() => navigate("/dashboard/report")}
+          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-red-600 to-red-700 px-4 py-2 text-white font-semibold uppercase tracking-wide text-sm shadow transition-transform hover:-translate-y-0.5 hover:shadow-lg focus:outline-none cursor-pointer"
         >
           <FontAwesomeIcon icon={faChartBar} className="mr-1 h-7 w-7 " />
           <span>Lihat Laporan Analitik</span>

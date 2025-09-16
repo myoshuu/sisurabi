@@ -6,7 +6,6 @@ import {
   faSignInAlt,
   faSignOutAlt,
   faHistory,
-  faDownload,
   faSearch,
   faExclamationTriangle,
   faFilter,
@@ -18,6 +17,7 @@ import axios from "../../helpers/Axios";
 import type { AxiosError } from "axios";
 import Toast from "../../components/Toast";
 import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router";
 
 type Flash = { type: "success" | "error"; text: string };
 
@@ -59,6 +59,8 @@ const Absensi: React.FC = () => {
   const [absensi, setAbsensi] = useState<AbsensiItem[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+
+  const navigate = useNavigate();
 
   const absoluteUrl = (path: string | null | undefined) => {
     if (!path) return "";
@@ -346,7 +348,8 @@ const Absensi: React.FC = () => {
         </p>
         <button
           type="button"
-          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-red-600 to-red-700 px-4 py-2 text-white font-semibold uppercase tracking-wide text-sm shadow transition-transform hover:-translate-y-0.5 hover:shadow-lg focus:outline-none"
+          onClick={() => navigate("/dashboard/report")}
+          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-red-600 to-red-700 px-4 py-2 text-white font-semibold uppercase tracking-wide text-sm shadow transition-transform hover:-translate-y-0.5 hover:shadow-lg focus:outline-none cursor-pointer"
         >
           <FontAwesomeIcon icon={faChartBar} className="mr-1 h-7 w-7 " />
           <span>Lihat Laporan Analitik</span>
