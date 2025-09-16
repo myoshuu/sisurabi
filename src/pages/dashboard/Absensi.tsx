@@ -59,7 +59,7 @@ const Absensi: React.FC = () => {
   const [absensi, setAbsensi] = useState<AbsensiItem[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
-
+  // Testing for push
   const navigate = useNavigate();
 
   const absoluteUrl = (path: string | null | undefined) => {
