@@ -13,6 +13,13 @@ export const login = async (req: Request, res: Response) => {
     });
     if (!user) return res.status(401).json({ message: "Akun tidak ditemukan" });
 
+    // Check if user account is disabled
+    if (user.disabled) {
+      return res
+        .status(401)
+        .json({ message: "Maaf, akun anda di non-aktifkan" });
+    }
+
     const comparePass = await bcrypt.compare(password, user.password);
     if (!comparePass)
       return res.status(401).json({ message: "Email atau Password salah" });
@@ -191,8 +198,7 @@ export const getRoles = async (req: Request, res: Response) => {
 // Get all users with search and filter
 export const getUsers = async (req: Request, res: Response) => {
   try {
-    const { q, field, role } = req.query;
-    console.log("Search params:", { q, field, role });
+    const { q, field, role, status } = req.query;
 
     let whereClause: any = {};
 
@@ -232,7 +238,14 @@ export const getUsers = async (req: Request, res: Response) => {
       whereClause.roleId = role as string;
     }
 
-    console.log("Where clause:", whereClause);
+    // Status filter
+    if (status) {
+      if (status === "active") {
+        whereClause.disabled = false;
+      } else if (status === "inactive") {
+        whereClause.disabled = true;
+      }
+    }
 
     const users = await prisma.user.findMany({
       where: whereClause,
@@ -378,12 +391,14 @@ export const updateUser = async (req: Request, res: Response) => {
 export const changePassword = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { currentPassword, newPassword } = req.body;
+    const { currentPassword, newPassword, forceChange } = req.body;
+    const currentUserId = req.session.loggedIn?.id;
+    const currentUserRole = req.session.loggedIn?.role?.nama;
 
     // Validate required fields
-    if (!currentPassword || !newPassword) {
+    if (!newPassword) {
       return res.status(400).json({
-        message: "Password lama dan password baru harus diisi",
+        message: "Password baru harus diisi",
       });
     }
 
@@ -405,16 +420,31 @@ export const changePassword = async (req: Request, res: Response) => {
       });
     }
 
-    // Verify current password
-    const isCurrentPasswordValid = await bcrypt.compare(
-      currentPassword,
-      existingUser.password
-    );
+    // Check if it's a force change (admin changing someone else's password)
+    const isForceChange =
+      forceChange &&
+      (currentUserRole === "SUPER ADMIN" || currentUserRole === "ADMIN") &&
+      currentUserId !== id;
 
-    if (!isCurrentPasswordValid) {
-      return res.status(400).json({
-        message: "Password lama tidak sesuai",
-      });
+    // If not a force change, require current password
+    if (!isForceChange) {
+      if (!currentPassword) {
+        return res.status(400).json({
+          message: "Password lama harus diisi",
+        });
+      }
+
+      // Verify current password
+      const isCurrentPasswordValid = await bcrypt.compare(
+        currentPassword,
+        existingUser.password
+      );
+
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({
+          message: "Password lama tidak sesuai",
+        });
+      }
     }
 
     // Hash new password
@@ -428,8 +458,12 @@ export const changePassword = async (req: Request, res: Response) => {
       },
     });
 
+    const message = isForceChange
+      ? "Password berhasil diubah oleh admin"
+      : "Password berhasil diubah";
+
     return res.status(200).json({
-      message: "Password berhasil diubah",
+      message,
     });
   } catch (err) {
     console.error(err);

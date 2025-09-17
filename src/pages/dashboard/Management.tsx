@@ -14,8 +14,6 @@ import {
   faKey,
   faToggleOn,
   faToggleOff,
-  faEye,
-  faEyeSlash,
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect, useRef, useState } from "react";
 import axios from "../../helpers/Axios";
@@ -41,6 +39,7 @@ const Management: React.FC = () => {
   const [search, setSearch] = useState("");
   const [searchField, setSearchField] = useState<string>("");
   const [roleFilter, setRoleFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
   const [searching, setSearching] = useState(false);
   const [debounceTimer, setDebounceTimer] = useState<number | null>(null);
   const [showFilter, setShowFilter] = useState(false);
@@ -59,6 +58,7 @@ const Management: React.FC = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
+  const [forceChange, setForceChange] = useState(false);
 
   // Delete confirmation modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -87,23 +87,24 @@ const Management: React.FC = () => {
     }
   };
 
-  const fetchUsers = async (q?: string, field?: string, role?: string) => {
+  const fetchUsers = async (
+    q?: string,
+    field?: string,
+    role?: string,
+    status?: string
+  ) => {
     try {
       const params: Record<string, string> = {};
       if (q) params.q = q;
       if (field) params.field = field;
       if (role) params.role = role;
-
-      console.log("Fetching users with params:", params);
+      if (status) params.status = status;
 
       const res = await axios.get("/api/auth/users", {
         params: Object.keys(params).length ? params : undefined,
       });
-
-      console.log("Users response:", res.data);
       setUsers(res.data?.users || []);
     } catch (err) {
-      console.error("Error fetching users:", err);
       const error = err as AxiosError<{ message: string }>;
       setFlash({
         type: "error",
@@ -152,7 +153,7 @@ const Management: React.FC = () => {
   };
 
   const canEditUser = (item: UserItem) => {
-    const role = user?.role?.nama;
+    const role = user?.role?.name;
     return role === "SUPER ADMIN" || role === "ADMIN";
   };
 
@@ -167,8 +168,16 @@ const Management: React.FC = () => {
 
   const handleChangePassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!passwordUserId || !currentPassword || !newPassword || !confirmPassword)
+    if (!passwordUserId || !newPassword || !confirmPassword) return;
+
+    // If not force change, require current password
+    if (!forceChange && !currentPassword) {
+      setFlash({
+        type: "error",
+        text: "Password lama harus diisi",
+      });
       return;
+    }
 
     if (newPassword !== confirmPassword) {
       setFlash({
@@ -191,8 +200,9 @@ const Management: React.FC = () => {
       const res = await axios.put(
         `/api/auth/users/${passwordUserId}/password`,
         {
-          currentPassword,
+          currentPassword: forceChange ? undefined : currentPassword,
           newPassword,
+          forceChange,
         }
       );
       setFlash({
@@ -204,6 +214,7 @@ const Management: React.FC = () => {
       setNewPassword("");
       setConfirmPassword("");
       setPasswordUserId(null);
+      setForceChange(false);
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
       setFlash({
@@ -262,6 +273,7 @@ const Management: React.FC = () => {
 
   const openPasswordModal = (userId: string) => {
     setPasswordUserId(userId);
+    setForceChange(false);
     setShowPasswordModal(true);
   };
 
@@ -278,13 +290,14 @@ const Management: React.FC = () => {
       void fetchUsers(
         q.length > 0 ? q : undefined,
         searchField || undefined,
-        roleFilter || undefined
+        roleFilter || undefined,
+        statusFilter || undefined
       );
     }, 350);
     setDebounceTimer(id);
     return () => window.clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, searchField, roleFilter]);
+  }, [search, searchField, roleFilter, statusFilter]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -513,6 +526,18 @@ const Management: React.FC = () => {
               ))}
             </select>
 
+            {/* Status Filter */}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rounded-full border-2 border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-red-600"
+              title="Filter Status"
+            >
+              <option value="">Semua Status</option>
+              <option value="active">Aktif</option>
+              <option value="inactive">Nonaktif</option>
+            </select>
+
             {/* Field Filter Popover */}
             <div className="relative" ref={filterRef}>
               <button
@@ -709,23 +734,49 @@ const Management: React.FC = () => {
                 Ubah Password
               </h2>
               <p className="text-yellow-900/80 text-sm font-medium mt-1">
-                Masukkan password lama dan password baru
+                {forceChange
+                  ? "Masukkan password baru (admin mode - skip current password)"
+                  : "Masukkan password lama dan password baru"}
               </p>
             </div>
             <form onSubmit={handleChangePassword} className="p-6 space-y-4">
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">
-                  Password Lama <span className="text-red-600">*</span>
-                </label>
-                <input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="Masukkan password lama"
-                  required
-                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base focus:outline-none focus:border-yellow-600 focus:ring-4 focus:ring-yellow-600/10"
-                />
-              </div>
+              {/* Force Change Option for Admins */}
+              {user?.role?.name === "SUPER ADMIN" ||
+              user?.role?.name === "ADMIN" ? (
+                <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={forceChange}
+                      onChange={(e) => setForceChange(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-blue-800 font-medium">
+                      Force Change (Admin) - Skip current password verification
+                    </span>
+                  </label>
+                  <p className="text-blue-700 text-sm mt-1">
+                    Silahkan checklist ini untuk mengganti password secara paksa
+                    tanpa memasukkan password lama
+                  </p>
+                </div>
+              ) : null}
+
+              {!forceChange && (
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">
+                    Password Lama <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Masukkan password lama"
+                    required
+                    className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base focus:outline-none focus:border-yellow-600 focus:ring-4 focus:ring-yellow-600/10"
+                  />
+                </div>
+              )}
               <div>
                 <label className="block text-gray-700 font-semibold mb-2">
                   Password Baru <span className="text-red-600">*</span>
@@ -777,6 +828,7 @@ const Management: React.FC = () => {
                     setNewPassword("");
                     setConfirmPassword("");
                     setPasswordUserId(null);
+                    setForceChange(false);
                   }}
                   className="px-4 py-3 rounded-lg border-2 border-gray-300 text-gray-700 font-semibold text-sm hover:bg-gray-50 cursor-pointer"
                 >
