@@ -201,13 +201,11 @@ export const getUsers = async (req: Request, res: Response) => {
       if (field === "email") {
         whereClause.email = {
           contains: q as string,
-          mode: "insensitive",
         };
       } else if (field === "role") {
         whereClause.role = {
           nama: {
             contains: q as string,
-            mode: "insensitive",
           },
         };
       }
@@ -217,14 +215,12 @@ export const getUsers = async (req: Request, res: Response) => {
         {
           email: {
             contains: q as string,
-            mode: "insensitive",
           },
         },
         {
           role: {
             nama: {
               contains: q as string,
-              mode: "insensitive",
             },
           },
         },
@@ -243,6 +239,7 @@ export const getUsers = async (req: Request, res: Response) => {
       select: {
         id: true,
         email: true,
+        disabled: true,
         createdAt: true,
         updatedAt: true,
         role: {
@@ -370,6 +367,128 @@ export const updateUser = async (req: Request, res: Response) => {
     return res.status(200).json({
       message: `User dengan email ${user.email} berhasil diperbarui`,
       user,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
+  }
+};
+
+// Change user password
+export const changePassword = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    // Validate required fields
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        message: "Password lama dan password baru harus diisi",
+      });
+    }
+
+    // Validate new password strength
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        message: "Password baru minimal 8 karakter",
+      });
+    }
+
+    // Check if user exists
+    const existingUser = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({
+        message: "User tidak ditemukan",
+      });
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(
+      currentPassword,
+      existingUser.password
+    );
+
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({
+        message: "Password lama tidak sesuai",
+      });
+    }
+
+    // Hash new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+
+    // Update password
+    await prisma.user.update({
+      where: { id },
+      data: {
+        password: hashedNewPassword,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Password berhasil diubah",
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Terjadi kesalahan sistem" });
+  }
+};
+
+// Disable/Enable user
+export const toggleUserStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { disabled } = req.body;
+
+    // Check if user exists
+    const existingUser = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        disabled: true,
+      },
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({
+        message: "User tidak ditemukan",
+      });
+    }
+
+    // Prevent disabling own account
+    if (req.session.loggedIn?.id === id && disabled) {
+      return res.status(400).json({
+        message: "Tidak dapat menonaktifkan akun sendiri",
+      });
+    }
+
+    // Update user status
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: {
+        disabled: disabled,
+      },
+      select: {
+        id: true,
+        email: true,
+        disabled: true,
+        role: {
+          select: {
+            id: true,
+            nama: true,
+          },
+        },
+      },
+    });
+
+    const statusText = disabled ? "dinonaktifkan" : "diaktifkan";
+    return res.status(200).json({
+      message: `User dengan email ${updatedUser.email} berhasil ${statusText}`,
+      user: updatedUser,
     });
   } catch (err) {
     console.error(err);

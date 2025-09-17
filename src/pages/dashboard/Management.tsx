@@ -11,6 +11,11 @@ import {
   faSearch,
   faFilter,
   faExclamationTriangle,
+  faKey,
+  faToggleOn,
+  faToggleOff,
+  faEye,
+  faEyeSlash,
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect, useRef, useState } from "react";
 import axios from "../../helpers/Axios";
@@ -23,6 +28,7 @@ type Flash = { type: "success" | "error"; text: string };
 type UserItem = {
   id: string;
   email: string;
+  disabled: boolean;
   role: { id: string; nama: string };
   createdAt: string;
   updatedAt: string;
@@ -45,6 +51,19 @@ const Management: React.FC = () => {
   const [formPassword, setFormPassword] = useState("");
   const [formRoleId, setFormRoleId] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  // Password change modal state
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordUserId, setPasswordUserId] = useState<string | null>(null);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  // Delete confirmation modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
+  const [deletingUser, setDeletingUser] = useState(false);
 
   const [roles, setRoles] = useState<{ id: string; nama: string }[]>([]);
 
@@ -146,12 +165,66 @@ const Management: React.FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = async (id: string) => {
+  const handleChangePassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!passwordUserId || !currentPassword || !newPassword || !confirmPassword)
+      return;
+
+    if (newPassword !== confirmPassword) {
+      setFlash({
+        type: "error",
+        text: "Password baru dan konfirmasi password tidak sama",
+      });
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setFlash({
+        type: "error",
+        text: "Password baru minimal 8 karakter",
+      });
+      return;
+    }
+
+    setChangingPassword(true);
     try {
-      const res = await axios.delete(`/api/auth/users/${id}`);
+      const res = await axios.put(
+        `/api/auth/users/${passwordUserId}/password`,
+        {
+          currentPassword,
+          newPassword,
+        }
+      );
       setFlash({
         type: "success",
-        text: res.data.message || "User dihapus",
+        text: res.data.message || "Password berhasil diubah",
+      });
+      setShowPasswordModal(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordUserId(null);
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      setFlash({
+        type: "error",
+        text: error?.response?.data?.message || error.message,
+      });
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  const handleToggleUserStatus = async (id: string, currentStatus: boolean) => {
+    try {
+      const res = await axios.put(`/api/auth/users/${id}/status`, {
+        disabled: !currentStatus,
+      });
+      setFlash({
+        type: "success",
+        text:
+          res.data.message ||
+          `User berhasil ${!currentStatus ? "dinonaktifkan" : "diaktifkan"}`,
       });
       await fetchUsers();
     } catch (err) {
@@ -161,6 +234,40 @@ const Management: React.FC = () => {
         text: error?.response?.data?.message || error.message,
       });
     }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteUserId) return;
+
+    setDeletingUser(true);
+    try {
+      const res = await axios.delete(`/api/auth/users/${deleteUserId}`);
+      setFlash({
+        type: "success",
+        text: res.data.message || "User dihapus",
+      });
+      await fetchUsers();
+      setShowDeleteModal(false);
+      setDeleteUserId(null);
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      setFlash({
+        type: "error",
+        text: error?.response?.data?.message || error.message,
+      });
+    } finally {
+      setDeletingUser(false);
+    }
+  };
+
+  const openPasswordModal = (userId: string) => {
+    setPasswordUserId(userId);
+    setShowPasswordModal(true);
+  };
+
+  const openDeleteModal = (userId: string) => {
+    setDeleteUserId(userId);
+    setShowDeleteModal(true);
   };
 
   useEffect(() => {
@@ -497,10 +604,16 @@ const Management: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div>
                     <h4 className="font-semibold text-gray-700">Email</h4>
-                    <p>{item.email}</p>
+                    <p
+                      className={
+                        item.disabled ? "text-gray-400 line-through" : ""
+                      }
+                    >
+                      {item.email}
+                    </p>
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-700">Role</h4>
@@ -514,6 +627,18 @@ const Management: React.FC = () => {
                       }`}
                     >
                       {item.role.nama}
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-700">Status</h4>
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${
+                        item.disabled
+                          ? "bg-red-100 text-red-700 border-red-300"
+                          : "bg-green-100 text-green-700 border-green-300"
+                      }`}
+                    >
+                      {item.disabled ? "Nonaktif" : "Aktif"}
                     </span>
                   </div>
                 </div>
@@ -530,7 +655,30 @@ const Management: React.FC = () => {
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => openPasswordModal(item.id)}
+                        className="px-4 py-2 rounded-lg bg-yellow-600 text-white text-sm font-medium hover:bg-yellow-700 inline-flex items-center gap-2 cursor-pointer"
+                      >
+                        <FontAwesomeIcon icon={faKey} className="h-4 w-4" />{" "}
+                        Password
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleToggleUserStatus(item.id, item.disabled)
+                        }
+                        className={`px-4 py-2 rounded-lg text-white text-sm font-medium inline-flex items-center gap-2 cursor-pointer ${
+                          item.disabled
+                            ? "bg-green-600 hover:bg-green-700"
+                            : "bg-orange-600 hover:bg-orange-700"
+                        }`}
+                      >
+                        <FontAwesomeIcon
+                          icon={item.disabled ? faToggleOn : faToggleOff}
+                          className="h-4 w-4"
+                        />{" "}
+                        {item.disabled ? "Aktifkan" : "Nonaktifkan"}
+                      </button>
+                      <button
+                        onClick={() => openDeleteModal(item.id)}
                         className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 inline-flex items-center gap-2 cursor-pointer"
                       >
                         <FontAwesomeIcon icon={faTrash} className="h-4 w-4" />{" "}
@@ -550,6 +698,145 @@ const Management: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Change Password Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg max-w-md w-full mx-4">
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border-b border-yellow-200 p-6 rounded-t-xl">
+              <h2 className="text-yellow-600 text-xl font-bold flex items-center gap-2">
+                <FontAwesomeIcon icon={faKey} className="h-6 w-6" />
+                Ubah Password
+              </h2>
+              <p className="text-yellow-900/80 text-sm font-medium mt-1">
+                Masukkan password lama dan password baru
+              </p>
+            </div>
+            <form onSubmit={handleChangePassword} className="p-6 space-y-4">
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Password Lama <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Masukkan password lama"
+                  required
+                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base focus:outline-none focus:border-yellow-600 focus:ring-4 focus:ring-yellow-600/10"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Password Baru <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Masukkan password baru"
+                  required
+                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base focus:outline-none focus:border-yellow-600 focus:ring-4 focus:ring-yellow-600/10"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Konfirmasi Password <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Konfirmasi password baru"
+                  required
+                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base focus:outline-none focus:border-yellow-600 focus:ring-4 focus:ring-yellow-600/10"
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  disabled={changingPassword}
+                  className={`flex-1 inline-flex items-center justify-center gap-2 rounded-lg ${
+                    changingPassword
+                      ? "bg-gray-400"
+                      : "bg-gradient-to-br from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
+                  } px-4 py-3 text-white font-semibold text-sm shadow transition-transform ${
+                    changingPassword
+                      ? "cursor-not-allowed"
+                      : "hover:-translate-y-0.5"
+                  } focus:outline-none`}
+                >
+                  <FontAwesomeIcon icon={faKey} className="h-4 w-4" />
+                  {changingPassword ? "Mengubah..." : "Ubah Password"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPasswordModal(false);
+                    setCurrentPassword("");
+                    setNewPassword("");
+                    setConfirmPassword("");
+                    setPasswordUserId(null);
+                  }}
+                  className="px-4 py-3 rounded-lg border-2 border-gray-300 text-gray-700 font-semibold text-sm hover:bg-gray-50 cursor-pointer"
+                >
+                  Batal
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg max-w-md w-full mx-4">
+            <div className="bg-gradient-to-br from-red-50 to-pink-50 border-b border-red-200 p-6 rounded-t-xl">
+              <h2 className="text-red-600 text-xl font-bold flex items-center gap-2">
+                <FontAwesomeIcon icon={faTrash} className="h-6 w-6" />
+                Konfirmasi Hapus User
+              </h2>
+              <p className="text-red-900/80 text-sm font-medium mt-1">
+                Tindakan ini tidak dapat dibatalkan
+              </p>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-700 mb-6">
+                Apakah Anda yakin ingin menghapus user ini? Semua data yang
+                terkait dengan user ini akan dihapus secara permanen.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleDelete}
+                  disabled={deletingUser}
+                  className={`flex-1 inline-flex items-center justify-center gap-2 rounded-lg ${
+                    deletingUser
+                      ? "bg-gray-400"
+                      : "bg-gradient-to-br from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
+                  } px-4 py-3 text-white font-semibold text-sm shadow transition-transform ${
+                    deletingUser
+                      ? "cursor-not-allowed"
+                      : "hover:-translate-y-0.5"
+                  } focus:outline-none`}
+                >
+                  <FontAwesomeIcon icon={faTrash} className="h-4 w-4" />
+                  {deletingUser ? "Menghapus..." : "Ya, Hapus"}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setDeleteUserId(null);
+                  }}
+                  className="px-4 py-3 rounded-lg border-2 border-gray-300 text-gray-700 font-semibold text-sm hover:bg-gray-50 cursor-pointer"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

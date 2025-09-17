@@ -8,6 +8,8 @@ import {
   getUsers,
   updateUser,
   deleteUser,
+  changePassword,
+  toggleUserStatus,
 } from "@/actions/Auth";
 import { isAuthenticated } from "@/middleware/auth";
 import { authorize } from "@/middleware/authorize";
@@ -50,5 +52,16 @@ router.delete(
   authorize("SUPER ADMIN", "ADMIN"),
   deleteUser
 ); // http://localhost:3000/api/auth/users/:id
+
+// Password management
+router.put("/users/:id/password", isAuthenticated, changePassword); // http://localhost:3000/api/auth/users/:id/password (users can change their own password, admins can change any password)
+
+// User status management (admin only)
+router.put(
+  "/users/:id/status",
+  isAuthenticated,
+  authorize("SUPER ADMIN", "ADMIN"),
+  toggleUserStatus
+); // http://localhost:3000/api/auth/users/:id/status
 
 export default router;
