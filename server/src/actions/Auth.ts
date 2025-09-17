@@ -134,6 +134,7 @@ export const register = async (req: Request, res: Response) => {
         },
       },
     });
+
     return res.status(201).json({
       message: `Berhasil menambahkan user dengan email ${user.email}`,
       user,
@@ -484,6 +485,11 @@ export const toggleUserStatus = async (req: Request, res: Response) => {
         id: true,
         email: true,
         disabled: true,
+        role: {
+          select: {
+            nama: true,
+          },
+        },
       },
     });
 
@@ -519,7 +525,6 @@ export const toggleUserStatus = async (req: Request, res: Response) => {
       },
     });
 
-    const statusText = disabled ? "dinonaktifkan" : "diaktifkan";
     return res.status(200).json({
       message: `User dengan email ${updatedUser.email} berhasil ${statusText}`,
       user: updatedUser,
@@ -541,6 +546,11 @@ export const deleteUser = async (req: Request, res: Response) => {
       select: {
         id: true,
         email: true,
+        role: {
+          select: {
+            nama: true,
+          },
+        },
       },
     });
 

@@ -111,12 +111,11 @@ const Management: React.FC = () => {
     fetchUsers();
   }, []);
 
-  // Check if user has admin privileges
-  const isAdmin =
-    user?.role?.name === "SUPER ADMIN" || user?.role?.name === "ADMIN";
+  // Check if user has super admin privileges
+  const isSuperAdmin = user?.role?.name === "SUPER ADMIN";
 
-  // Redirect to dashboard if user doesn't have admin privileges
-  if (!isAdmin) {
+  // Redirect to dashboard if user doesn't have super admin privileges
+  if (!isSuperAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -207,7 +206,7 @@ const Management: React.FC = () => {
 
   const canEditUser = (item: UserItem) => {
     const role = user?.role?.name;
-    return role === "SUPER ADMIN" || role === "ADMIN";
+    return role === "SUPER ADMIN";
   };
 
   const handleEdit = (item: UserItem) => {
@@ -369,7 +368,7 @@ const Management: React.FC = () => {
         </div>
         <div className="p-6">
           <ul className="list-disc list-inside text-gray-600 space-y-2">
-            <li>Hanya SUPER ADMIN dan ADMIN yang dapat mengelola user</li>
+            <li>Hanya SUPER ADMIN yang dapat mengelola user</li>
             <li>Email harus menggunakan domain @bi.go.id</li>
             <li>
               Password minimal 8 karakter dengan kombinasi huruf dan angka
@@ -779,9 +778,8 @@ const Management: React.FC = () => {
               </p>
             </div>
             <form onSubmit={handleChangePassword} className="p-6 space-y-4">
-              {/* Force Change Option for Admins */}
-              {user?.role?.name === "SUPER ADMIN" ||
-              user?.role?.name === "ADMIN" ? (
+              {/* Force Change Option for Super Admin */}
+              {user?.role?.name === "SUPER ADMIN" ? (
                 <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input

@@ -129,6 +129,13 @@ export const clockIn = async (req: Request, res: Response) => {
         userId,
         createdBy: req.session.loggedIn?.id ?? "",
       },
+      include: {
+        user: {
+          select: {
+            email: true,
+          },
+        },
+      },
     });
 
     res.status(200).json({ message: "Anda sudah berhasil Clock In", absensi });
@@ -169,6 +176,13 @@ export const clockOut = async (req: Request, res: Response) => {
         fotoClockOut: `/uploads/${req.file.filename}`,
         clockOut: new Date(),
         updatedBy: req.session.loggedIn?.id ?? "",
+      },
+      include: {
+        user: {
+          select: {
+            email: true,
+          },
+        },
       },
     });
 

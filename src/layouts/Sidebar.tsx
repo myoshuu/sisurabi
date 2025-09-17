@@ -24,9 +24,8 @@ const Sidebar: React.FC = () => {
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
-  // Check if user has admin privileges
-  const isAdmin =
-    user?.role?.name === "SUPER ADMIN" || user?.role?.name === "ADMIN";
+  // Check if user has super admin privileges
+  const isSuperAdmin = user?.role?.name === "SUPER ADMIN";
 
   const navItems = [
     { to: "/dashboard", icon: faTachometerAlt, label: "Dashboard" },
@@ -34,8 +33,8 @@ const Sidebar: React.FC = () => {
     { to: "/dashboard/souvenir", icon: faGift, label: "Laporan Suvenir" },
     { to: "/dashboard/absensi", icon: faCalendarCheck, label: "Absensi" },
     { to: "/dashboard/report", icon: faChartBar, label: "Laporan Analitik" },
-    // Only show Management menu for admin users
-    ...(isAdmin
+    // Only show Management menu for super admin users
+    ...(isSuperAdmin
       ? [
           {
             to: "/dashboard/user",

@@ -135,6 +135,18 @@ export const createLaporan = async (req: Request, res: Response) => {
         createdBy: req.session.loggedIn?.id ?? "",
         status: statusCalc,
       },
+      include: {
+        user: {
+          select: {
+            email: true,
+          },
+        },
+        responden: {
+          select: {
+            nama: true,
+          },
+        },
+      },
     });
 
     return res.status(200).json({
@@ -203,8 +215,18 @@ export const deleteLaporan = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    // First, get the laporan record to access file path
-    const laporan = await prisma.laporanSuvenir.findUnique({ where: { id } });
+    // First, get the laporan record to access file path and user info
+    const laporan = await prisma.laporanSuvenir.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+      },
+    });
     if (!laporan) {
       return res.status(404).json({ message: "Laporan tidak ditemukan" });
     }
@@ -268,7 +290,18 @@ export const approveLaporan = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const existing = await prisma.laporanSuvenir.findUnique({ where: { id } });
+    const existing = await prisma.laporanSuvenir.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+      },
+    });
+
     if (existing?.status === "APPROVED")
       return res.status(401).json({
         message:
@@ -281,6 +314,14 @@ export const approveLaporan = async (req: Request, res: Response) => {
         status: "APPROVED",
         approvedBy: req.session.loggedIn?.id ?? "",
         approvedAt: new Date(),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
       },
     });
 
@@ -297,7 +338,18 @@ export const rejectLaporan = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const existing = await prisma.laporanSuvenir.findUnique({ where: { id } });
+    const existing = await prisma.laporanSuvenir.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+      },
+    });
+
     if (existing?.status === "REJECTED")
       return res.status(401).json({
         message:
@@ -310,6 +362,14 @@ export const rejectLaporan = async (req: Request, res: Response) => {
         status: "REJECTED",
         approvedBy: req.session.loggedIn?.id ?? "",
         approvedAt: new Date(),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
       },
     });
 

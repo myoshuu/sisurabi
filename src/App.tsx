@@ -12,6 +12,7 @@ import LaporanSouvenir from "./pages/dashboard/LaporanSouvenir";
 import Absensi from "./pages/dashboard/Absensi";
 import LaporanAnalitik from "./pages/dashboard/LaporanAnalitik";
 import Management from "./pages/dashboard/Management";
+import Setting from "./pages/dashboard/Setting";
 
 const App: React.FC = () => {
   return (
@@ -41,6 +42,7 @@ const App: React.FC = () => {
             <Route path="/dashboard/absensi" element={<Absensi />} />
             <Route path="/dashboard/report" element={<LaporanAnalitik />} />
             <Route path="/dashboard/user" element={<Management />} />
+            <Route path="/dashboard/setting" element={<Setting />} />
           </Route>
         </Routes>
       </BrowserRouter>
