@@ -11,6 +11,7 @@ import PublicRoute from "./components/PublicRoute";
 import LaporanSouvenir from "./pages/dashboard/LaporanSouvenir";
 import Absensi from "./pages/dashboard/Absensi";
 import LaporanAnalitik from "./pages/dashboard/LaporanAnalitik";
+import Management from "./pages/dashboard/Management";
 
 const App: React.FC = () => {
   return (
@@ -39,6 +40,7 @@ const App: React.FC = () => {
             <Route path="/dashboard/souvenir" element={<LaporanSouvenir />} />
             <Route path="/dashboard/absensi" element={<Absensi />} />
             <Route path="/dashboard/report" element={<LaporanAnalitik />} />
+            <Route path="/dashboard/user" element={<Management />} />
           </Route>
         </Routes>
       </BrowserRouter>
