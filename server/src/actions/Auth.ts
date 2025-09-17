@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from "../helpers/Prisma";
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
@@ -191,6 +192,7 @@ export const getRoles = async (req: Request, res: Response) => {
 export const getUsers = async (req: Request, res: Response) => {
   try {
     const { q, field, role } = req.query;
+    console.log("Search params:", { q, field, role });
 
     let whereClause: any = {};
 
@@ -233,6 +235,8 @@ export const getUsers = async (req: Request, res: Response) => {
     if (role) {
       whereClause.roleId = role as string;
     }
+
+    console.log("Where clause:", whereClause);
 
     const users = await prisma.user.findMany({
       where: whereClause,

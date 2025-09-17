@@ -74,11 +74,17 @@ const Management: React.FC = () => {
       if (q) params.q = q;
       if (field) params.field = field;
       if (role) params.role = role;
+
+      console.log("Fetching users with params:", params);
+
       const res = await axios.get("/api/auth/users", {
         params: Object.keys(params).length ? params : undefined,
       });
+
+      console.log("Users response:", res.data);
       setUsers(res.data?.users || []);
     } catch (err) {
+      console.error("Error fetching users:", err);
       const error = err as AxiosError<{ message: string }>;
       setFlash({
         type: "error",
@@ -230,12 +236,12 @@ const Management: React.FC = () => {
 
       {/* Create User Card */}
       <div className="mb-8 overflow-hidden rounded-xl shadow-md bg-white">
-        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border-b border-indigo-200 p-6">
-          <h2 className="text-indigo-600 text-xl font-bold flex items-center gap-2">
+        <div className="bg-gradient-to-br from-rose-50 to-red-50 border-b border-red-200 p-6">
+          <h2 className="text-red-600 text-xl font-bold flex items-center gap-2">
             <FontAwesomeIcon icon={faUserPlus} className="h-6 w-6" />
             {editId ? "Perbarui User" : "Tambah User Baru"}
           </h2>
-          <p className="text-indigo-900/80 text-sm font-medium mt-1">
+          <p className="text-red-900/80 text-sm font-medium mt-1">
             {editId
               ? "Perbarui data user"
               : "Daftarkan pengguna baru ke sistem"}
@@ -261,7 +267,7 @@ const Management: React.FC = () => {
                   value={formEmail}
                   onChange={(e) => setFormEmail(e.target.value)}
                   placeholder="nama@bi.go.id"
-                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base focus:outline-none focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/10"
+                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
                 />
               </div>
 
@@ -278,7 +284,7 @@ const Management: React.FC = () => {
                   required
                   value={formRoleId}
                   onChange={(e) => setFormRoleId(e.target.value)}
-                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base focus:outline-none focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/10"
+                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
                 >
                   <option value="">Pilih role</option>
                   {roles.map((r) => (
@@ -313,7 +319,7 @@ const Management: React.FC = () => {
                   value={formPassword}
                   onChange={(e) => setFormPassword(e.target.value)}
                   placeholder="Masukkan password"
-                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base focus:outline-none focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/10"
+                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
                 />
                 <small className="text-gray-500 text-xs">
                   Minimal 8 karakter dengan kombinasi huruf dan angka
@@ -329,7 +335,7 @@ const Management: React.FC = () => {
                 className={`inline-flex items-center gap-2 rounded-lg ${
                   submitting
                     ? "bg-gray-400"
-                    : "bg-gradient-to-br from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800"
+                    : "bg-gradient-to-br from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
                 } px-5 py-3 text-white font-semibold uppercase tracking-wide text-sm shadow transition-transform ${
                   submitting ? "cursor-not-allowed" : "hover:-translate-y-0.5"
                 } focus:outline-none`}
@@ -353,12 +359,12 @@ const Management: React.FC = () => {
 
       {/* Users List */}
       <div className="rounded-xl shadow-md bg-white overflow-hidden">
-        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border-b border-indigo-200 p-6">
-          <h2 className="text-indigo-600 text-xl font-bold flex items-center gap-2">
+        <div className="bg-gradient-to-br from-rose-50 to-red-50 border-b border-red-200 p-6">
+          <h2 className="text-red-600 text-xl font-bold flex items-center gap-2">
             <FontAwesomeIcon icon={faUsers} className="h-6 w-6" />
             Daftar Pengguna Sistem
           </h2>
-          <p className="text-indigo-900/80 text-sm font-medium mt-1">
+          <p className="text-red-900/80 text-sm font-medium mt-1">
             Semua pengguna yang memiliki akses ke sistem
           </p>
         </div>
@@ -376,7 +382,7 @@ const Management: React.FC = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cari user..."
-                className="w-full rounded-full border-2 border-gray-200 pl-12 pr-4 py-2 text-base transition focus:outline-none focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/10"
+                className="w-full rounded-full border-2 border-gray-200 pl-12 pr-4 py-2 text-base transition focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
               />
               {searching && (
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
@@ -389,7 +395,7 @@ const Management: React.FC = () => {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="rounded-full border-2 border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-indigo-600"
+              className="rounded-full border-2 border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-red-600"
               title="Filter Role"
             >
               <option value="">Semua Role</option>
@@ -410,7 +416,7 @@ const Management: React.FC = () => {
                 }}
                 className={`rounded-full border-2 px-3 py-2 text-sm flex items-center gap-2 cursor-pointer transition ${
                   showFilter
-                    ? "border-indigo-600 text-indigo-700"
+                    ? "border-red-600 text-red-700"
                     : "border-gray-200 text-gray-600 hover:border-gray-300"
                 }`}
                 title="Filter"
@@ -475,7 +481,7 @@ const Management: React.FC = () => {
             users.map((item) => (
               <div
                 key={item.id}
-                className="border-2 border-gray-100 rounded-xl p-6 bg-white transition-all duration-300 hover:border-indigo-600 hover:shadow-[0_8px_25px_rgba(99,102,241,0.1)] animate-fadeIn"
+                className="border-2 border-gray-100 rounded-xl p-6 bg-white transition-all duration-300 hover:border-red-600 hover:shadow-[0_8px_25px_rgba(220,38,38,0.1)] animate-fadeIn"
               >
                 <div className="mb-3">
                   <h3 className="text-lg font-semibold text-gray-800">
