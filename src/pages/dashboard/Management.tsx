@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUserCog,
@@ -38,15 +39,6 @@ type UserItem = {
 const Management: React.FC = () => {
   const { user } = useAuth();
 
-  // Check if user has admin privileges
-  const isAdmin =
-    user?.role?.name === "SUPER ADMIN" || user?.role?.name === "ADMIN";
-
-  // Redirect to dashboard if user doesn't have admin privileges
-  if (!isAdmin) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
   const [flash, setFlash] = useState<Flash | null>(null);
   const [users, setUsers] = useState<UserItem[]>([]);
   const [search, setSearch] = useState("");
@@ -85,6 +77,48 @@ const Management: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [roles, setRoles] = useState<{ id: string; nama: string }[]>([]);
+
+  // All useEffect hooks must be called before any conditional returns
+  useEffect(() => {
+    if (debounceTimer) window.clearTimeout(debounceTimer);
+    setSearching(true);
+    const id = window.setTimeout(() => {
+      const q = search.trim();
+      void fetchUsers(
+        q.length > 0 ? q : undefined,
+        searchField || undefined,
+        roleFilter || undefined,
+        statusFilter || undefined
+      );
+    }, 350);
+    setDebounceTimer(id);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, searchField, roleFilter, statusFilter]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
+        setShowFilter(false);
+      }
+    };
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    fetchRoles();
+    fetchUsers();
+  }, []);
+
+  // Check if user has admin privileges
+  const isAdmin =
+    user?.role?.name === "SUPER ADMIN" || user?.role?.name === "ADMIN";
+
+  // Redirect to dashboard if user doesn't have admin privileges
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const resetForm = () => {
     setEditId(null);
@@ -306,38 +340,6 @@ const Management: React.FC = () => {
     setDeleteUserId(userId);
     setShowDeleteModal(true);
   };
-
-  useEffect(() => {
-    if (debounceTimer) window.clearTimeout(debounceTimer);
-    setSearching(true);
-    const id = window.setTimeout(() => {
-      const q = search.trim();
-      void fetchUsers(
-        q.length > 0 ? q : undefined,
-        searchField || undefined,
-        roleFilter || undefined,
-        statusFilter || undefined
-      );
-    }, 350);
-    setDebounceTimer(id);
-    return () => window.clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, searchField, roleFilter, statusFilter]);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
-        setShowFilter(false);
-      }
-    };
-    window.addEventListener("click", handleClickOutside);
-    return () => window.removeEventListener("click", handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    fetchRoles();
-    fetchUsers();
-  }, []);
 
   return (
     <section id="users" className="w-full p-6">

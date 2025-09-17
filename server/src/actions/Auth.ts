@@ -200,7 +200,7 @@ export const getUsers = async (req: Request, res: Response) => {
   try {
     const { q, field, role, status } = req.query;
 
-    let whereClause: any = {};
+    const whereClause: any = {};
 
     // Search functionality
     if (q && field) {
