@@ -942,7 +942,7 @@ const Management: React.FC = () => {
                 <button
                   onClick={handleDelete}
                   disabled={deletingUser}
-                  className={`flex-1 inline-flex items-center justify-center gap-2 rounded-lg ${
+                  className={`flex-1 inline-flex items-center justify-center gap-2 rounded-lg cursor-pointer ${
                     deletingUser
                       ? "bg-gray-400"
                       : "bg-gradient-to-br from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
