@@ -491,7 +491,7 @@ const Management: React.FC = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className={`inline-flex items-center gap-2 rounded-lg ${
+                className={`inline-flex items-center gap-2 rounded-lg cursor-pointer ${
                   submitting
                     ? "bg-gray-400"
                     : "bg-gradient-to-br from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
@@ -884,7 +884,7 @@ const Management: React.FC = () => {
                 <button
                   type="submit"
                   disabled={changingPassword}
-                  className={`flex-1 inline-flex items-center justify-center gap-2 rounded-lg ${
+                  className={`flex-1 inline-flex items-center justify-center gap-2 rounded-lg cursor-pointer ${
                     changingPassword
                       ? "bg-gray-400"
                       : "bg-gradient-to-br from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
