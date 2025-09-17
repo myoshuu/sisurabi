@@ -14,8 +14,11 @@ import {
   faKey,
   faToggleOn,
   faToggleOff,
+  faEye,
+  faEyeSlash,
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect, useRef, useState } from "react";
+import { Navigate } from "react-router-dom";
 import axios from "../../helpers/Axios";
 import type { AxiosError } from "axios";
 import Toast from "../../components/Toast";
@@ -34,6 +37,16 @@ type UserItem = {
 
 const Management: React.FC = () => {
   const { user } = useAuth();
+
+  // Check if user has admin privileges
+  const isAdmin =
+    user?.role?.name === "SUPER ADMIN" || user?.role?.name === "ADMIN";
+
+  // Redirect to dashboard if user doesn't have admin privileges
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const [flash, setFlash] = useState<Flash | null>(null);
   const [users, setUsers] = useState<UserItem[]>([]);
   const [search, setSearch] = useState("");
@@ -64,6 +77,12 @@ const Management: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
   const [deletingUser, setDeletingUser] = useState(false);
+
+  // Password visibility states
+  const [showFormPassword, setShowFormPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [roles, setRoles] = useState<{ id: string; nama: string }[]>([]);
 
@@ -215,6 +234,9 @@ const Management: React.FC = () => {
       setConfirmPassword("");
       setPasswordUserId(null);
       setForceChange(false);
+      setShowCurrentPassword(false);
+      setShowNewPassword(false);
+      setShowConfirmPassword(false);
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
       setFlash({
@@ -274,6 +296,9 @@ const Management: React.FC = () => {
   const openPasswordModal = (userId: string) => {
     setPasswordUserId(userId);
     setForceChange(false);
+    setShowCurrentPassword(false);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
     setShowPasswordModal(true);
   };
 
@@ -433,14 +458,26 @@ const Management: React.FC = () => {
                     <span className="text-red-600">*</span>
                   )}
                 </label>
-                <input
-                  id="userPassword"
-                  type="password"
-                  value={formPassword}
-                  onChange={(e) => setFormPassword(e.target.value)}
-                  placeholder="Masukkan password"
-                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
-                />
+                <div className="relative">
+                  <input
+                    id="userPassword"
+                    type={showFormPassword ? "text" : "password"}
+                    value={formPassword}
+                    onChange={(e) => setFormPassword(e.target.value)}
+                    placeholder="Masukkan password"
+                    className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 pr-12 text-base focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowFormPassword(!showFormPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
+                  >
+                    <FontAwesomeIcon
+                      icon={showFormPassword ? faEye : faEyeSlash}
+                      className="h-5 w-5"
+                    />
+                  </button>
+                </div>
                 <small className="text-gray-500 text-xs">
                   Minimal 8 karakter dengan kombinasi huruf dan angka
                 </small>
@@ -767,41 +804,79 @@ const Management: React.FC = () => {
                   <label className="block text-gray-700 font-semibold mb-2">
                     Password Lama <span className="text-red-600">*</span>
                   </label>
-                  <input
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="Masukkan password lama"
-                    required
-                    className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base focus:outline-none focus:border-yellow-600 focus:ring-4 focus:ring-yellow-600/10"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showCurrentPassword ? "text" : "password"}
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      placeholder="Masukkan password lama"
+                      required
+                      className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 pr-12 text-base focus:outline-none focus:border-yellow-600 focus:ring-4 focus:ring-yellow-600/10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowCurrentPassword(!showCurrentPassword)
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
+                    >
+                      <FontAwesomeIcon
+                        icon={showCurrentPassword ? faEye : faEyeSlash}
+                        className="h-5 w-5"
+                      />
+                    </button>
+                  </div>
                 </div>
               )}
               <div>
                 <label className="block text-gray-700 font-semibold mb-2">
                   Password Baru <span className="text-red-600">*</span>
                 </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Masukkan password baru"
-                  required
-                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base focus:outline-none focus:border-yellow-600 focus:ring-4 focus:ring-yellow-600/10"
-                />
+                <div className="relative">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Masukkan password baru"
+                    required
+                    className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 pr-12 text-base focus:outline-none focus:border-yellow-600 focus:ring-4 focus:ring-yellow-600/10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
+                  >
+                    <FontAwesomeIcon
+                      icon={showNewPassword ? faEye : faEyeSlash}
+                      className="h-5 w-5"
+                    />
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="block text-gray-700 font-semibold mb-2">
                   Konfirmasi Password <span className="text-red-600">*</span>
                 </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Konfirmasi password baru"
-                  required
-                  className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base focus:outline-none focus:border-yellow-600 focus:ring-4 focus:ring-yellow-600/10"
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Konfirmasi password baru"
+                    required
+                    className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 pr-12 text-base focus:outline-none focus:border-yellow-600 focus:ring-4 focus:ring-yellow-600/10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
+                  >
+                    <FontAwesomeIcon
+                      icon={showConfirmPassword ? faEye : faEyeSlash}
+                      className="h-5 w-5"
+                    />
+                  </button>
+                </div>
               </div>
               <div className="flex gap-3 pt-4">
                 <button
@@ -829,6 +904,9 @@ const Management: React.FC = () => {
                     setConfirmPassword("");
                     setPasswordUserId(null);
                     setForceChange(false);
+                    setShowCurrentPassword(false);
+                    setShowNewPassword(false);
+                    setShowConfirmPassword(false);
                   }}
                   className="px-4 py-3 rounded-lg border-2 border-gray-300 text-gray-700 font-semibold text-sm hover:bg-gray-50 cursor-pointer"
                 >

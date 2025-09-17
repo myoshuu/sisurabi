@@ -19,10 +19,14 @@ import { useAuth } from "../context/AuthContext";
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const { setUser, user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
+  // Check if user has admin privileges
+  const isAdmin =
+    user?.role?.name === "SUPER ADMIN" || user?.role?.name === "ADMIN";
 
   const navItems = [
     { to: "/dashboard", icon: faTachometerAlt, label: "Dashboard" },
@@ -30,7 +34,16 @@ const Sidebar: React.FC = () => {
     { to: "/dashboard/souvenir", icon: faGift, label: "Laporan Suvenir" },
     { to: "/dashboard/absensi", icon: faCalendarCheck, label: "Absensi" },
     { to: "/dashboard/report", icon: faChartBar, label: "Laporan Analitik" },
-    { to: "/dashboard/user", icon: faUserCog, label: "Manajemen Pengguna" },
+    // Only show Management menu for admin users
+    ...(isAdmin
+      ? [
+          {
+            to: "/dashboard/user",
+            icon: faUserCog,
+            label: "Manajemen Pengguna",
+          },
+        ]
+      : []),
     { to: "/dashboard/setting", icon: faCog, label: "Pengaturan" },
   ];
 
